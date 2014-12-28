@@ -88,40 +88,43 @@ int check_neighbours(int arr[], int dimention, int x){
 	//x + d - 1
 	//x + d + 1
 
-	if (x - dimention - 1 > -1 && ((x - dimention)/dimention) == ((x - dimention - 1)/dimention)  ){
-		cout << "a" << endl;
+	if ((x - dimention - 1) > -1 && ((int)((x - dimention - 1) / dimention)) == ((int)((x - dimention) / dimention))){
+		//cout << "a" << endl;
 		a = arr[x - dimention - 1];
 	}
+
 	if (x - dimention > -1){
-		cout << "b" << endl;
+		//cout << "b" << endl;
 		b = arr[x - dimention];
 	}
-	if (x - dimention + 1 > -1 && ((x - dimention) / dimention) == ((x - dimention + 1) / dimention)){
-		cout << "c" << endl;
+
+	if ((x - dimention + 1 > 0) && ((int)((x - dimention + 1) / dimention)) == ((int)((x - dimention) / dimention))){
+		//cout << "c" << endl;
 		c = arr[x - dimention + 1];
 	}
-	if (x - 1 > -1 && (x / dimention) == ((x - 1) / dimention) ){
-		cout << "d" << endl;
+
+	if (x - 1 > -1 && ((int)((x - 1) / dimention)) == ((int)(x / dimention))){
+		//cout << "d" << endl;
 		d = arr[x - 1];
 	}
-	if (x + 1 < dimention*dimention && (x / dimention) == ((x + 1) / dimention)){
-		cout << "e" << endl;
+
+	if (x + 1 < dimention*dimention && ((int)((x + 1) / dimention)) == ((int)(x / dimention))){
+		//cout << "e" << endl;
 		e = arr[x + 1];
 	}
-	if (x + dimention - 1 < dimention*dimention && ((x + dimention) / dimention) == ((x + dimention - 1) / dimention)){
-		cout << "f" << endl;
+
+	if ((x + dimention - 1) < dimention*dimention && ((int)((x + dimention - 1) / dimention)) == ((int)((x + dimention) / dimention))){
+		//cout << "f" << endl;
 		f = arr[x + dimention - 1];
 	}
-	if (x + dimention < dimention*dimention){
-		cout << "g" << endl;
+
+	if ((x + dimention) < dimention*dimention ){
+		//cout << "g" << endl;
 		g = arr[x + dimention];
 	}
-	//cout << "h: " << arr[x + dimention + 1] << endl;
-	//cout << x + dimention + 1 << " < " << dimention*dimention << endl;
-	//cout << "mod 1: " << ((x + dimention) / dimention) << endl;
-	//cout << "mod 2: " << ((x + dimention + 1) / dimention) << endl;
-	if (x + dimention + 1 < dimention*dimention && ((x + dimention) / dimention) == ((x + dimention + 1) / dimention)){
-		cout << "h" << endl;
+
+	if ((x + dimention + 1) < dimention*dimention && ((int)((x + dimention + 1) / dimention)) == ((int)((x + dimention) / dimention))){
+		//cout << "h" << endl;
 		h = arr[x + dimention + 1];
 	}
 
@@ -184,8 +187,8 @@ void life(int arr[], int dimention, int iterations){
 
 int main(){
 	
-	int dimention = 7;
-	int iterations = 6;
+	int dimention = 60;
+	int iterations = 50;
 
 	vector< vector<int>> env = create_environment(dimention);
 	env = set_diagonal(env);
@@ -195,34 +198,31 @@ int main(){
 	// PRINTING ARRAY
 	
 	for (int i = 0; i < (dimention*dimention); ++i){
-		if (i == 6)
-			cout << "*";
-		else
-			cout << arr[i];
+		cout << arr[i];
 
 		if (((i + 1) % dimention) == 0 && i / 1 != 0){
 			cout << endl;
 		}
 	}
 
-	int c = check_neighbours(arr, dimention, 6);
-	cout << c << endl;
+	//int c = check_neighbours(arr, dimention, 24);
+	//cout << c << endl;
 
 
 
-	/*
-	int * n_arr = process_life(arr, dimention);
+	
+	//int * n_arr = process_life(arr, dimention);
 
-	// PRINTING ARRAY
-	for (int i = 0; i < (dimention*dimention); ++i){
-		cout << n_arr[i];
-		if (((i + 1) % dimention) == 0 && i / 1 != 0){
-			cout << endl;
-		}
-	}
-	*/
+	//// PRINTING ARRAY
+	//for (int i = 0; i < (dimention*dimention); ++i){
+	//	cout << n_arr[i];
+	//	if (((i + 1) % dimention) == 0 && i / 1 != 0){
+	//		cout << endl;
+	//	}
+	//}
+	
 
-	//life(arr, dimention, iterations);
+	life(arr, dimention, iterations);
 
 	system("PAUSE");
 	return 0;
