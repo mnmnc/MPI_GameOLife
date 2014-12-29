@@ -141,31 +141,65 @@ int main(int argc, char *argv[])
 
 	char * n_arr = array_copy(arr, full_dimention);
 
-	print_array(arr, full_dimention);
+	print_array(n_arr, full_dimention);
 
-	int o = check_neighbours(arr, dimention, 10);
-	cout << o << endl;
-
-	// CORRECT ABOVE
-
-	char * new_array = array_copy(arr, dimention);
 
 	for (int i = 0; i < full_dimention; ++i){
 		int neighbours = check_neighbours(arr, dimention, i);
 
 		if (arr[i] == 0){
 			if (neighbours == 1 || neighbours == 2){
-				new_array[i] = 1;
+				n_arr[i] = 1;
 			}
 		}
 		else {
 			if (neighbours > 2 || neighbours < 1){
-				new_array[i] = 0;
+				n_arr[i] = 0;
 			}
 		}
 	}
 
-	return new_array;
+	print_array(n_arr, full_dimention);
+
+	// CORRECT ABOVE
+
+	int iterations = 2;
+
+	char * current = new char[full_dimention];
+
+	copy(n_arr, n_arr + (full_dimention), current);
+
+	free(n_arr);
+
+	while (iterations > 0){
+		cout << "in while" << endl;
+		char * next_array = new char[full_dimention];
+
+		for (int i = 0; i < full_dimention; ++i){
+
+			int neighbours = check_neighbours(current, dimention, i);
+
+			if (current[i] == 0){
+				if (neighbours == 1 || neighbours == 2){
+					next_array[i] = 1;
+				}
+			}
+			else {
+				if (neighbours > 2 || neighbours < 1){
+					next_array[i] = 0;
+				}
+			}
+		}
+		print_array(next_array, full_dimention);
+
+		copy(next_array, next_array + (full_dimention), current);
+		--iterations;
+		free(next_array);
+	}
+
+
+
+
 
 	return 0;
  	// MPI INIT
