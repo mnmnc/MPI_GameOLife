@@ -73,6 +73,48 @@ char * array_copy(char arr[], int full_dimention){
 	return new_arr;
 }
 
+int check_neighbours(char arr[], int dimention, int x){
+	int count = 0;
+	char a, b, c, d, e, f, g, h = 0;
+	a = b = c = d = e = f = g = h;
+
+	if ((x - dimention - 1) > -1 && ((int)((x - dimention - 1) / dimention)) == ((int)((x - dimention) / dimention))){
+		a = arr[x - dimention - 1];
+	}
+
+	if (x - dimention > -1){
+		b = arr[x - dimention];
+	}
+
+	if ((x - dimention + 1 > 0) && ((int)((x - dimention + 1) / dimention)) == ((int)((x - dimention) / dimention))){
+		c = arr[x - dimention + 1];
+	}
+
+	if (x - 1 > -1 && ((int)((x - 1) / dimention)) == ((int)(x / dimention))){
+		d = arr[x - 1];
+	}
+
+	if (x + 1 < dimention*dimention && ((int)((x + 1) / dimention)) == ((int)(x / dimention))){
+		e = arr[x + 1];
+	}
+
+	if ((x + dimention - 1) < dimention*dimention && ((int)((x + dimention - 1) / dimention)) == ((int)((x + dimention) / dimention))){
+		f = arr[x + dimention - 1];
+	}
+
+	if ((x + dimention) < dimention*dimention ){
+		g = arr[x + dimention];
+	}
+
+	if ((x + dimention + 1) < dimention*dimention && ((int)((x + dimention + 1) / dimention)) == ((int)((x + dimention) / dimention))){
+		h = arr[x + dimention + 1];
+	}
+
+	count = a + b + c + d + e + f + g + h;
+
+	return count;
+}
+
 int main(int argc, char *argv[])
 {
 	 
@@ -100,6 +142,30 @@ int main(int argc, char *argv[])
 	char * n_arr = array_copy(arr, full_dimention);
 
 	print_array(arr, full_dimention);
+
+	int o = check_neighbours(arr, dimention, 10);
+	cout << o << endl;
+
+	// CORRECT ABOVE
+
+	char * new_array = array_copy(arr, dimention);
+
+	for (int i = 0; i < full_dimention; ++i){
+		int neighbours = check_neighbours(arr, dimention, i);
+
+		if (arr[i] == 0){
+			if (neighbours == 1 || neighbours == 2){
+				new_array[i] = 1;
+			}
+		}
+		else {
+			if (neighbours > 2 || neighbours < 1){
+				new_array[i] = 0;
+			}
+		}
+	}
+
+	return new_array;
 
 	return 0;
  	// MPI INIT
