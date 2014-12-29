@@ -4,11 +4,11 @@
 
 using namespace std;
 
-vector <vector <int>> create_environment(int dimention){
-	vector <vector <int>> env;
+vector <vector <char>> create_environment(int dimention){
+	vector <vector <char>> env;
 
 	for (int i = 0; i < dimention; ++i){
-		vector <int> row;
+		vector <char> row;
 		for (int j = 0; j < dimention; ++j){
 			row.push_back(0);
 		}
@@ -18,7 +18,7 @@ vector <vector <int>> create_environment(int dimention){
 	return env;
 }
 
-vector <vector <int>> set_diagonal(vector <vector <int>> env){
+vector <vector <char>> set_diagonal(vector <vector <char>> env){
 	for (unsigned int i = 0; i < env.size(); ++i){
 		for (unsigned int j = 0; j < env.at(i).size(); ++j){
 			if (i == j){
@@ -36,8 +36,8 @@ vector <vector <int>> set_diagonal(vector <vector <int>> env){
 	return env;
 }
 
-int * vector_to_array(vector<vector<int>> env, int dimention){
-	int * arr = new int[dimention * dimention];
+char * vector_to_array(vector<vector<char>> env, int dimention){
+	char * arr = new char[dimention * dimention];
 	int index = 0;
 	for (unsigned int i = 0; i < env.size(); ++i){
 		for (unsigned int j = 0; j < env[0].size(); ++j){
@@ -49,7 +49,7 @@ int * vector_to_array(vector<vector<int>> env, int dimention){
 	return arr;
 }
 
-int * array_copy(int arr[], int dimention){
+char * array_copy(char arr[], int dimention){
 	//cout << endl;
 	//for (int i = 0; i < (dimention*dimention); ++i){
 	//	cout << arr[i];
@@ -58,7 +58,7 @@ int * array_copy(int arr[], int dimention){
 	//	}
 	//}
 
-	int * new_arr = new int[dimention * dimention];
+	char * new_arr = new char[dimention * dimention];
 
 	copy(arr, arr + (dimention * dimention), new_arr);
 
@@ -77,7 +77,7 @@ int * array_copy(int arr[], int dimention){
 	return new_arr;
 }
 
-int count_living(int arr[], int dimention){
+int count_living(char arr[], int dimention){
 	int counter = 0;
 	for (int i = 0; i < dimention * dimention; ++i){
 		counter += arr[i];
@@ -87,9 +87,9 @@ int count_living(int arr[], int dimention){
 }
 
 
-int check_neighbours(int arr[], int dimention, int x){
+int check_neighbours(char arr[], int dimention, int x){
 	int count = 0;
-	int a, b, c, d, e, f, g, h = 0;
+	char a, b, c, d, e, f, g, h = 0;
 	a = b = c = d = e = f = g = h;
 	//x - d - 1 
 	//x - d
@@ -153,8 +153,8 @@ int check_neighbours(int arr[], int dimention, int x){
 	return count;
 }
 
-int * process_life(int arr[], int dimention){
-	int * new_array = array_copy(arr, dimention);
+char * process_life(char arr[], int dimention){
+	char * new_array = array_copy(arr, dimention);
 
 	for (int i = 0; i < dimention * dimention; ++i){
 		int neighbours = check_neighbours(arr, dimention, i);
@@ -174,54 +174,57 @@ int * process_life(int arr[], int dimention){
 	return new_array;
 }
 
-void life(int arr[], int dimention, int iterations){
-	int * current = new int[dimention * dimention];
+void life(char arr[], int dimention, int iterations){
+	char * current = new char[dimention * dimention];
 	copy(arr, arr + (dimention * dimention), current);
 	free(arr);
+	int max_iterations = iterations;
 
 	while (iterations > 0){
 		cout << "Iterations left: " << iterations << endl;
-		int * next_array = process_life(current, dimention);
+		char * next_array = process_life(current, dimention);
 
 		// PRINTING ARRAY
-		// cout << endl;
-		// for (int i = 0; i < (dimention*dimention); ++i){
-		// 	cout << next_array[i];
-		// 	if (((i + 1) % dimention) == 0 && i / 1 != 0){
-		// 		cout << endl;
-		// 	}
-		// }
+		cout << endl;
+		for (int i = 0; i < (dimention*dimention); ++i){
+			cout << (int)next_array[i];
+			if (((i + 1) % dimention) == 0 && i / 1 != 0){
+				cout << endl;
+			}
+		}
 
 		copy(next_array, next_array + (dimention * dimention), current);
 		--iterations;
 		free(next_array);
-	}
 
-	int count = count_living(current, dimention);
-	cout << "[NFO] Living in last iteration: " << count << endl;
+		if (iterations < 6) {
+			int count = count_living(current, dimention);
+			cout << "[NFO] Living in iteration "<< iterations << "/" << max_iterations <<" : " << count << endl;
+		}
+	}
 }
 
 int main(){
 	
-	int dimention = 8000;
-	int iterations = 400;
+	int dimention = 40;
+	int iterations = 40;
 
-	vector< vector<int>> env = create_environment(dimention);
+	vector< vector<char>> env = create_environment(dimention);
 	env = set_diagonal(env);
 
-	int * arr = vector_to_array(env, dimention);
+	char * arr = vector_to_array(env, dimention);
 	env.clear();
 	
 
 	// PRINTING ARRAY
 	
-	// for (int i = 0; i < (dimention*dimention); ++i){
-	// 	cout << arr[i];
+	for (int i = 0; i < (dimention*dimention); ++i){
+		cout << (int)arr[i];
 
-	// 	if (((i + 1) % dimention) == 0 && i / 1 != 0){
-	// 		cout << endl;
-	// 	}
-	// }
+		if (((i + 1) % dimention) == 0 && i / 1 != 0){
+			cout << endl;
+		}
+	}
 
 	//int c = check_neighbours(arr, dimention, 24);
 	//cout << c << endl;
