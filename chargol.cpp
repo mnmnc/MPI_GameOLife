@@ -50,30 +50,8 @@ char * vector_to_array(vector<vector<char>> env, int dimention){
 }
 
 char * array_copy(char arr[], int dimention){
-	//cout << endl;
-	//for (int i = 0; i < (dimention*dimention); ++i){
-	//	cout << arr[i];
-	//	if (((i + 1) % dimention) == 0 && i / 1 != 0){
-	//		cout << endl;
-	//	}
-	//}
-
 	char * new_arr = new char[dimention * dimention];
-
 	copy(arr, arr + (dimention * dimention), new_arr);
-
-	//for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); ++i){
-	//	new_arr[i] = arr[i];
-	//}
-
-	//cout << endl;
-	//for (int i = 0; i < (dimention*dimention); ++i){
-	//	cout << new_arr[i];
-	//	if (((i + 1) % dimention) == 0 && i / 1 != 0){
-	//		cout << endl;
-	//	}
-	//}
-
 	return new_arr;
 }
 
@@ -82,7 +60,6 @@ int count_living(char arr[], int dimention){
 	for (int i = 0; i < dimention * dimention; ++i){
 		counter += arr[i];
 	}
-
 	return counter;
 }
 
@@ -91,62 +68,38 @@ int check_neighbours(char arr[], int dimention, int x){
 	int count = 0;
 	char a, b, c, d, e, f, g, h = 0;
 	a = b = c = d = e = f = g = h;
-	//x - d - 1 
-	//x - d
-	//x - d + 1
-	//x - 1
-	//x + 1
-	//x + d - 1
-	//x + d + 1
 
 	if ((x - dimention - 1) > -1 && ((int)((x - dimention - 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		//cout << "a" << endl;
 		a = arr[x - dimention - 1];
 	}
 
 	if (x - dimention > -1){
-		//cout << "b" << endl;
 		b = arr[x - dimention];
 	}
 
 	if ((x - dimention + 1 > 0) && ((int)((x - dimention + 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		//cout << "c" << endl;
 		c = arr[x - dimention + 1];
 	}
 
 	if (x - 1 > -1 && ((int)((x - 1) / dimention)) == ((int)(x / dimention))){
-		//cout << "d" << endl;
 		d = arr[x - 1];
 	}
 
 	if (x + 1 < dimention*dimention && ((int)((x + 1) / dimention)) == ((int)(x / dimention))){
-		//cout << "e" << endl;
 		e = arr[x + 1];
 	}
 
 	if ((x + dimention - 1) < dimention*dimention && ((int)((x + dimention - 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		//cout << "f" << endl;
 		f = arr[x + dimention - 1];
 	}
 
 	if ((x + dimention) < dimention*dimention ){
-		//cout << "g" << endl;
 		g = arr[x + dimention];
 	}
 
 	if ((x + dimention + 1) < dimention*dimention && ((int)((x + dimention + 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		//cout << "h" << endl;
 		h = arr[x + dimention + 1];
 	}
-
-	//cout << "a:" << a << endl;
-	//cout << "b:" << b << endl;
-	//cout << "c:" << c << endl;
-	//cout << "d:" << d << endl;
-	//cout << "e:" << e << endl;
-	//cout << "f:" << f << endl;
-	//cout << "g:" << g << endl;
-	//cout << "h:" << h << endl;
 
 	count = a + b + c + d + e + f + g + h;
 
@@ -206,8 +159,8 @@ void life(char arr[], int dimention, int iterations){
 
 int main(){
 	
-	int dimention = 40;
-	int iterations = 40;
+	int dimention = 10;
+	int iterations = 2;
 
 	vector< vector<char>> env = create_environment(dimention);
 	env = set_diagonal(env);
