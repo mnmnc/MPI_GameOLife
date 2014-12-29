@@ -161,41 +161,145 @@ int main(int argc, char *argv[])
 
 	print_array(n_arr, full_dimention);
 
-	// CORRECT ABOVE
+	char * nn_arr = array_copy(n_arr, full_dimention);
 
-	int iterations = 2;
+	for (int i = 0; i < full_dimention; ++i){
+		int neighbours = check_neighbours(n_arr, dimention, i);
 
-	char * current = new char[full_dimention];
-
-	copy(n_arr, n_arr + (full_dimention), current);
-
-	free(n_arr);
-
-	while (iterations > 0){
-		cout << "in while" << endl;
-		char * next_array = new char[full_dimention];
-
-		for (int i = 0; i < full_dimention; ++i){
-
-			int neighbours = check_neighbours(current, dimention, i);
-
-			if (current[i] == 0){
-				if (neighbours == 1 || neighbours == 2){
-					next_array[i] = 1;
-				}
-			}
-			else {
-				if (neighbours > 2 || neighbours < 1){
-					next_array[i] = 0;
-				}
+		if (n_arr[i] == 0){
+			if (neighbours == 1 || neighbours == 2){
+				nn_arr[i] = 1;
 			}
 		}
-		print_array(next_array, full_dimention);
-
-		copy(next_array, next_array + (full_dimention), current);
-		--iterations;
-		free(next_array);
+		else {
+			if (neighbours > 2 || neighbours < 1){
+				nn_arr[i] = 0;
+			}
+		}
 	}
+
+	print_array(nn_arr, full_dimention);
+
+	char * nnn_arr = array_copy(nn_arr, full_dimention);
+
+	for (int i = 0; i < full_dimention; ++i){
+		int neighbours = check_neighbours(nn_arr, dimention, i);
+
+		if (nn_arr[i] == 0){
+			if (neighbours == 1 || neighbours == 2){
+				nnn_arr[i] = 1;
+			}
+		}
+		else {
+			if (neighbours > 2 || neighbours < 1){
+				nnn_arr[i] = 0;
+			}
+		}
+	}
+
+	print_array(nnn_arr, full_dimention);
+
+	char * nnnn_arr = array_copy(nnn_arr, full_dimention);
+
+	for (int i = 0; i < full_dimention; ++i){
+		int neighbours = check_neighbours(nnn_arr, dimention, i);
+
+		if (nnn_arr[i] == 0){
+			if (neighbours == 1 || neighbours == 2){
+				nnnn_arr[i] = 1;
+			}
+		}
+		else {
+			if (neighbours > 2 || neighbours < 1){
+				nnnn_arr[i] = 0;
+			}
+		}
+	}
+
+	print_array(nnnn_arr, full_dimention);
+
+	char * nnnnn_arr = array_copy(nnnn_arr, full_dimention);
+
+	for (int i = 0; i < full_dimention; ++i){
+		int neighbours = check_neighbours(nnnn_arr, dimention, i);
+
+		if (nnnn_arr[i] == 0){
+			if (neighbours == 1 || neighbours == 2){
+				nnnnn_arr[i] = 1;
+			}
+		}
+		else {
+			if (neighbours > 2 || neighbours < 1){
+				nnnnn_arr[i] = 0;
+			}
+		}
+	}
+
+	print_array(nnnnn_arr, full_dimention);
+
+	char * nnnnnn_arr = array_copy(nnnnn_arr, full_dimention);
+
+	for (int i = 0; i < full_dimention; ++i){
+		int neighbours = check_neighbours(nnnnn_arr, dimention, i);
+
+		if (nnnnn_arr[i] == 0){
+			if (neighbours == 1 || neighbours == 2){
+				nnnnnn_arr[i] = 1;
+			}
+		}
+		else {
+			if (neighbours > 2 || neighbours < 1){
+				nnnnnn_arr[i] = 0;
+			}
+		}
+	}
+
+	print_array(nnnnnn_arr, full_dimention);
+
+
+	// CORRECT ABOVE
+
+	// int iterations = 5;
+
+	// char * current = new char[full_dimention];
+
+	// copy(n_arr, n_arr + (full_dimention), current);
+
+	// free(n_arr);
+
+	// while (iterations > 0){
+
+	// 	cout << "\n-" << endl;
+	// 	char * next_array = new char[full_dimention];
+
+	// 	for (int i = 0; i < full_dimention; ++i){
+
+	// 		int neighbours = check_neighbours(current, dimention, i);
+
+	// 		if (current[i] == 0){
+	// 			if (neighbours == 1 || neighbours == 2){
+	// 				next_array[i] = 1;
+	// 			}
+	// 		}
+	// 		else {
+	// 			if (neighbours > 2 || neighbours < 1){
+	// 				next_array[i] = 0;
+	// 			}
+	// 		}
+	// 	}
+	// 	print_array(next_array, full_dimention);
+	// 	int neighbours = check_neighbours(current, dimention, 1);
+	// 	int neighbours2 = check_neighbours(current, dimention, 8);
+	// 	cout << endl << neighbours << endl << neighbours2 << endl;
+
+	// 	copy(next_array, next_array + (full_dimention), current);
+	// 	--iterations;
+	// 	free(next_array);
+
+	// 	int neighbours3 = check_neighbours(current, dimention, 1);
+	// 	int neighbours4 = check_neighbours(current, dimention, 8);
+	// 	cout << endl << neighbours3 << endl << neighbours4 << endl;
+	// }
 
 
 
