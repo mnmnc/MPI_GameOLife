@@ -123,182 +123,76 @@ int main(int argc, char *argv[])
 	int dimention = 10;
 	int full_dimention = 100;
 
-	MPI_Status status;
-	MPI_Request request;
-	request = MPI_REQUEST_NULL;
+	//MPI_Status status;
+	//MPI_Request request;
+	MPI_Request request[4];
+    MPI_Status status[4];
+	request[0] = MPI_REQUEST_NULL;
+	request[1] = MPI_REQUEST_NULL;
+	request[2] = MPI_REQUEST_NULL;
+	request[3] = MPI_REQUEST_NULL;
 
 	const int size = 10;
 
  	char buffi[100] = {};
  	char buffo[100] = {};
 
+ 	for (int i = 0; i < 100; ++i){
+ 		buffi[i] = i;
+ 		buffo[i] = i;
+ 	}
+
+ 	//print_array(buffo, 100);
+
  	vector< vector<char>> env = create_environment(dimention);
 	env = set_diagonal(env);
 
 	char * arr = vector_to_array(env, dimention);
-
-	print_array(arr, full_dimention);
-
-	char * n_arr = array_copy(arr, full_dimention);
-
-	print_array(n_arr, full_dimention);
-
-
-	for (int i = 0; i < full_dimention; ++i){
-		int neighbours = check_neighbours(arr, dimention, i);
-
-		if (arr[i] == 0){
-			if (neighbours == 1 || neighbours == 2){
-				n_arr[i] = 1;
-			}
-		}
-		else {
-			if (neighbours > 2 || neighbours < 1){
-				n_arr[i] = 0;
-			}
-		}
-	}
-
-	print_array(n_arr, full_dimention);
-
-	char * nn_arr = array_copy(n_arr, full_dimention);
-
-	for (int i = 0; i < full_dimention; ++i){
-		int neighbours = check_neighbours(n_arr, dimention, i);
-
-		if (n_arr[i] == 0){
-			if (neighbours == 1 || neighbours == 2){
-				nn_arr[i] = 1;
-			}
-		}
-		else {
-			if (neighbours > 2 || neighbours < 1){
-				nn_arr[i] = 0;
-			}
-		}
-	}
-
-	print_array(nn_arr, full_dimention);
-
-	char * nnn_arr = array_copy(nn_arr, full_dimention);
-
-	for (int i = 0; i < full_dimention; ++i){
-		int neighbours = check_neighbours(nn_arr, dimention, i);
-
-		if (nn_arr[i] == 0){
-			if (neighbours == 1 || neighbours == 2){
-				nnn_arr[i] = 1;
-			}
-		}
-		else {
-			if (neighbours > 2 || neighbours < 1){
-				nnn_arr[i] = 0;
-			}
-		}
-	}
-
-	print_array(nnn_arr, full_dimention);
-
-	char * nnnn_arr = array_copy(nnn_arr, full_dimention);
-
-	for (int i = 0; i < full_dimention; ++i){
-		int neighbours = check_neighbours(nnn_arr, dimention, i);
-
-		if (nnn_arr[i] == 0){
-			if (neighbours == 1 || neighbours == 2){
-				nnnn_arr[i] = 1;
-			}
-		}
-		else {
-			if (neighbours > 2 || neighbours < 1){
-				nnnn_arr[i] = 0;
-			}
-		}
-	}
-
-	print_array(nnnn_arr, full_dimention);
-
-	char * nnnnn_arr = array_copy(nnnn_arr, full_dimention);
-
-	for (int i = 0; i < full_dimention; ++i){
-		int neighbours = check_neighbours(nnnn_arr, dimention, i);
-
-		if (nnnn_arr[i] == 0){
-			if (neighbours == 1 || neighbours == 2){
-				nnnnn_arr[i] = 1;
-			}
-		}
-		else {
-			if (neighbours > 2 || neighbours < 1){
-				nnnnn_arr[i] = 0;
-			}
-		}
-	}
-
-	print_array(nnnnn_arr, full_dimention);
-
-	char * nnnnnn_arr = array_copy(nnnnn_arr, full_dimention);
-
-	for (int i = 0; i < full_dimention; ++i){
-		int neighbours = check_neighbours(nnnnn_arr, dimention, i);
-
-		if (nnnnn_arr[i] == 0){
-			if (neighbours == 1 || neighbours == 2){
-				nnnnnn_arr[i] = 1;
-			}
-		}
-		else {
-			if (neighbours > 2 || neighbours < 1){
-				nnnnnn_arr[i] = 0;
-			}
-		}
-	}
-
-	print_array(nnnnnn_arr, full_dimention);
-
-
-	
-	cout << "ITERATIONS TEST" << endl;
-
-	int iterations = 13;
-
 	char * b_arr = array_copy(arr, full_dimention);
 
-	while (iterations > 0){
+	//print_array(arr, full_dimention);
 
-		char * c_arr = array_copy(b_arr, full_dimention);
+	int test = 0;
+	if (test == 1){
 
-		for (int i = 0; i < full_dimention; ++i){
+		cout << "ITERATIONS TEST" << endl;
 
-			int neighbours = check_neighbours(b_arr, dimention, i);
+		int iterations = 13;
 
-			if (b_arr[i] == 0){
-				if (neighbours == 1 || neighbours == 2){
-					c_arr[i] = 1;
+		char * b_arr = array_copy(arr, full_dimention);
+
+		while (iterations > 0){
+
+			char * c_arr = array_copy(b_arr, full_dimention);
+
+			for (int i = 0; i < full_dimention; ++i){
+
+				int neighbours = check_neighbours(b_arr, dimention, i);
+
+				if (b_arr[i] == 0){
+					if (neighbours == 1 || neighbours == 2){
+						c_arr[i] = 1;
+					}
+				}
+				else {
+					if (neighbours > 2 || neighbours < 1){
+						c_arr[i] = 0;
+					}
 				}
 			}
-			else {
-				if (neighbours > 2 || neighbours < 1){
-					c_arr[i] = 0;
-				}
-			}
+			cout << iterations << endl;
+		 	print_array(c_arr, full_dimention);
+
+		 	copy(c_arr, c_arr + (full_dimention), b_arr);
+		 	--iterations;
+		 	free(c_arr);
+
 		}
-		cout << iterations << endl;
-	 	print_array(c_arr, full_dimention);
-
-	 	copy(c_arr, c_arr + (full_dimention), b_arr);
-	 	--iterations;
-	 	free(c_arr);
-
 	}
 
 	// CORRECT ABOVE
 
-
-
-
-	return 0;
- 	// MPI INIT
+	// MPI INIT
 	MPI_Init(&argc,&argv);
 
 	int numprocs;
@@ -307,27 +201,67 @@ int main(int argc, char *argv[])
 	int id;
 	MPI_Comm_rank(MPI_COMM_WORLD,&id);
 
+	int iterations = 2;
+
+	//while (iterations > 0){
+
+		if (id == 0){
+			MPI_Isend(&arr,full_dimention,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request[0]);
+			for (int i = 0; i < 100; ++i){
+				cout << i << ": " << (int) arr[i] << endl;
+			}
+		}
+		if (id == 1){
+			MPI_Irecv(&buffo,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request[1]);
+		}
+		MPI_Wait(&request[0],&status[0]);
+		MPI_Wait(&request[1],&status[1]);
+		if (id == 1){
+			--iterations;
+			//cout << " Array "<< iterations <<" has been received." << endl;
+			//print_array(buffo, 100);
+
+			for (int i = 0; i < 100; ++i){
+				cout << i << ": " << (int) buffo[i] << endl;
+			}
+		}
+
+		--iterations;
+	//}
+
+	MPI_Finalize();
+
+	return 0;
+ 	// MPI INIT
+	MPI_Init(&argc,&argv);
+
+	//int numprocs;
+	MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+
+	//int id;
+	MPI_Comm_rank(MPI_COMM_WORLD,&id);
+
 	 
 	if(id == 0){
-		MPI_Isend(&buffi,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-		MPI_Isend(&buffi,count,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request);
-		MPI_Isend(&buffi,count,MPI_CHAR,2,tag,MPI_COMM_WORLD,&request);
-		MPI_Isend(&buffi,count,MPI_CHAR,3,tag,MPI_COMM_WORLD,&request);
+		//MPI_Isend(&buffi,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+		//MPI_Isend(&buffi,count,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request);
+		//MPI_Isend(&buffi,count,MPI_CHAR,2,tag,MPI_COMM_WORLD,&request);
+		//MPI_Isend(&buffi,count,MPI_CHAR,3,tag,MPI_COMM_WORLD,&request);
 	}
 	if(id == 0){
-		MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
 	}
 	if(id == 1){
-		MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
 	}
 	if(id == 2){
-		MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
 	}
 	if(id == 3){
-		MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
 	}
 
-	MPI_Wait(&request,&status);
+	//MPI_Wait(&request,&status);
 	if(id == 0){
 		printf("processor %d sent %d\n",id,(int)buffi[0]);
 		printf("processor %d sent %d\n",id,(int)buffi[0]);
