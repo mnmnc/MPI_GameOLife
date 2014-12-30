@@ -135,9 +135,9 @@ int main(int argc, char *argv[])
 	int tag = 7;
 	int array_broadcast = 9;
 	int calculation = 8;
-	int count = 10;
-	int dimention = 10;
-	int full_dimention = 100;
+	int count = 100;
+	int dimention = 100;
+	int full_dimention = 10000;
 
 	//MPI_Status status;
 	//MPI_Request request;
@@ -148,13 +148,13 @@ int main(int argc, char *argv[])
 	MPI_Request	send_request,recv_request;
 
 
-	const int size = 10;
+	const int size = 100;
 
- 	char buffi[100] = {};
- 	char buffo[100] = {};
- 	char buffc[100];
+ 	char buffi[10000] = {};
+ 	char buffo[10000] = {};
+ 	char buffc[10000];
 
- 	for (int i = 0; i < 100; ++i){
+ 	for (int i = 0; i < 10000; ++i){
  		buffc[i] = 0;
  	}
 
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 	char * arr = vector_to_array(env, dimention);
 	char * b_arr = array_copy(arr, full_dimention);
 
-	int	        buffsize = 100;
+	int	        buffsize = 10000;
 	char       *sendbuff,*recvbuff;
 	sendbuff=(char *)malloc(sizeof(char)*buffsize);
 	recvbuff=(char *)malloc(sizeof(char)*buffsize);
@@ -226,16 +226,16 @@ int main(int argc, char *argv[])
 	int id;
 	MPI_Comm_rank(MPI_COMM_WORLD,&id);
 
-	int iterations = 2;
+	int iterations = 200;
 
-	//while (iterations > 0){
+	while (iterations > 0){
 		if (id == 1){
 			
 			//MPI_Irecv(&buffc,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
 			int ierr=MPI_Irecv(b_arr,buffsize,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
 			ierr=MPI_Wait(&recv_request,&status);
 			//print_array(recvbuff, full_dimention);
-			cout << "Buff received" << endl;
+			//cout << "Buff received" << endl;
 
 		}
 		if (id == 0){
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 			int ierr=MPI_Isend(arr,buffsize,MPI_CHAR, 1,array_broadcast,MPI_COMM_WORLD,&send_request);
 			//print_array(arr, full_dimention);
 			ierr=MPI_Wait(&send_request,&status);
-			cout << "Buff sent" << endl;
+			//cout << "Buff sent" << endl;
 		}
 		
 		//MPI_Wait(&request,&status);
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 		if (id == 1){
 			--iterations;
 			
-			print_array(b_arr, full_dimention);
+			//print_array(b_arr, full_dimention);
 			// for (int i = id; i < full_dimention/dimention; i+=numprocs){
 			// 	cout << "P1 Checking " << i << endl;
 			// 	for (int j = 0; j < dimention; ++j){
@@ -263,53 +263,102 @@ int main(int argc, char *argv[])
 			// 	}
 			// }
 			int division = full_dimention/numprocs;
-			cout << division << endl;
+
 			char * local_arr = new char[division];
-			char l_arr[division];
+
 			int index = 0;
 			for (int i = id * division; i < ((id + 1)*division); ++i){
 				int neighbours = check_neighbours(b_arr, dimention, i);
-				cout << i << " -> "<< neighbours << endl;
-				cout << "\t -> "<< (int)b_arr[i] << endl;
 				local_arr[index] = 0;
 				if (b_arr[i] == 0){
-					cout << "\t\t- 0 "<< endl;
 					if (neighbours == 1 || neighbours == 2){
-						cout << "\t\t\t setting to 1 "<< endl;
 						local_arr[index] = 1;
 					}
 				}
 				else {
-					cout << "\t\t- 1 "<< endl;
 					if (neighbours > 2 || neighbours < 1){
-						cout << "\t\t\t setting to 0 "<< endl;
 						local_arr[index] = 0;
 					}
 				}
 				++index;
 			}
-			for (int i = 0; i < division; ++i){
-				cout << (int)local_arr[i] << " ";
-			}
-			print_division_array(local_arr, division, dimention);
+			//cout << "Process 1" << endl;
+			//print_division_array(local_arr, division, dimention);
+
+
+			int ierr=MPI_Isend(local_arr,division,MPI_CHAR, 0,calculation,MPI_COMM_WORLD,&send_request);
+			ierr=MPI_Wait(&send_request,&status);
+			//cout << "Buff sent" << endl;
 
 		}
 		if (id == 0){
 			--iterations;
 			
+
+			//print_array(arr, full_dimention);
 			// for (int i = id; i < full_dimention/dimention; i+=numprocs){
 			// 	cout << "P0 Checking " << i << endl;
 			// 	for (int j = 0; j < dimention; ++j){
 			// 		cout << "\t -> " << (i*dimention)+j << endl; 
 			// 	}
 			// }
+			int division = full_dimention/numprocs;
+
+			char * local_arr = new char[division];
+
+			int index = 0;
+			for (int i = id * division; i < ((id + 1)*division); ++i){
+				int neighbours = check_neighbours(arr, dimention, i);
+				local_arr[index] = 0;
+				if (arr[i] == 0){
+					if (neighbours == 1 || neighbours == 2){
+						local_arr[index] = 1;
+					}
+				}
+				else {
+					if (neighbours > 2 || neighbours < 1){
+						local_arr[index] = 0;
+					}
+				}
+				++index;
+			}
+			//cout << "Process 0" << endl;
+			
+
+
+			char * received_arr = new char[division];
+
+			int ierr=MPI_Irecv(received_arr,division,MPI_CHAR,1,calculation,MPI_COMM_WORLD,&recv_request);
+
+			ierr=MPI_Wait(&recv_request,&status);
+
+			//cout << 0 << endl;
+			//print_division_array(local_arr, division, dimention);
+			//cout << 1 << endl;
+			//print_division_array(received_arr, division, dimention);
+
+			char * next_arr = new char[full_dimention];
+			for (int i = 0; i < full_dimention; ++i){
+				next_arr[i] = -1;
+			}
+
+			for (int i = 0; i < division; ++i){
+				next_arr[i] = local_arr[i];
+			}
+			for (int i = 5000,j=0; i < division+5000; ++i,++j){
+				next_arr[i] = received_arr[j];
+			}
+
+			print_array(next_arr, full_dimention);
+
+			arr = array_copy(next_arr, full_dimention);
 
 		}
 
 
 
 		//--iterations;
-	//}
+	}
 
 	MPI_Finalize();
 
