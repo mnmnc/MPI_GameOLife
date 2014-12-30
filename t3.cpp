@@ -257,50 +257,42 @@ int main(int argc, char *argv[])
 	print_array(nnnnnn_arr, full_dimention);
 
 
+	
+	cout << "ITERATIONS TEST" << endl;
+
+	int iterations = 13;
+
+	char * b_arr = array_copy(arr, full_dimention);
+
+	while (iterations > 0){
+
+		char * c_arr = array_copy(b_arr, full_dimention);
+
+		for (int i = 0; i < full_dimention; ++i){
+
+			int neighbours = check_neighbours(b_arr, dimention, i);
+
+			if (b_arr[i] == 0){
+				if (neighbours == 1 || neighbours == 2){
+					c_arr[i] = 1;
+				}
+			}
+			else {
+				if (neighbours > 2 || neighbours < 1){
+					c_arr[i] = 0;
+				}
+			}
+		}
+		cout << iterations << endl;
+	 	print_array(c_arr, full_dimention);
+
+	 	copy(c_arr, c_arr + (full_dimention), b_arr);
+	 	--iterations;
+	 	free(c_arr);
+
+	}
+
 	// CORRECT ABOVE
-
-	// int iterations = 5;
-
-	// char * current = new char[full_dimention];
-
-	// copy(n_arr, n_arr + (full_dimention), current);
-
-	// free(n_arr);
-
-	// while (iterations > 0){
-
-	// 	cout << "\n-" << endl;
-	// 	char * next_array = new char[full_dimention];
-
-	// 	for (int i = 0; i < full_dimention; ++i){
-
-	// 		int neighbours = check_neighbours(current, dimention, i);
-
-	// 		if (current[i] == 0){
-	// 			if (neighbours == 1 || neighbours == 2){
-	// 				next_array[i] = 1;
-	// 			}
-	// 		}
-	// 		else {
-	// 			if (neighbours > 2 || neighbours < 1){
-	// 				next_array[i] = 0;
-	// 			}
-	// 		}
-	// 	}
-	// 	print_array(next_array, full_dimention);
-	// 	int neighbours = check_neighbours(current, dimention, 1);
-	// 	int neighbours2 = check_neighbours(current, dimention, 8);
-	// 	cout << endl << neighbours << endl << neighbours2 << endl;
-
-	// 	copy(next_array, next_array + (full_dimention), current);
-	// 	--iterations;
-	// 	free(next_array);
-
-	// 	int neighbours3 = check_neighbours(current, dimention, 1);
-	// 	int neighbours4 = check_neighbours(current, dimention, 8);
-	// 	cout << endl << neighbours3 << endl << neighbours4 << endl;
-	// }
-
 
 
 
