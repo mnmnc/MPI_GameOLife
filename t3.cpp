@@ -136,6 +136,7 @@ int main(int argc, char *argv[])
 
  	char buffi[100] = {};
  	char buffo[100] = {};
+ 	char buffc[100] = {};
 
  	for (int i = 0; i < 100; ++i){
  		buffi[i] = i;
@@ -212,7 +213,8 @@ int main(int argc, char *argv[])
 			}
 		}
 		if (id == 1){
-			MPI_Irecv(&buffo,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request[1]);
+			char buffc[100] = {};
+			MPI_Irecv(&buffc,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request[1]);
 		}
 		MPI_Wait(&request[0],&status[0]);
 		MPI_Wait(&request[1],&status[1]);
@@ -222,7 +224,7 @@ int main(int argc, char *argv[])
 			//print_array(buffo, 100);
 
 			for (int i = 0; i < 100; ++i){
-				cout << i << ": " << (int) buffo[i] << endl;
+				cout << i << ": " << (int) buffc[i] << endl;
 			}
 		}
 
@@ -232,6 +234,13 @@ int main(int argc, char *argv[])
 	MPI_Finalize();
 
 	return 0;
+
+
+
+
+
+
+
  	// MPI INIT
 	MPI_Init(&argc,&argv);
 
