@@ -148,7 +148,12 @@ int main(int argc, char *argv[])
     MPI_Status status;
 	request = MPI_REQUEST_NULL;
 	MPI_Request	send_request;
+	MPI_Request	send_request2;
+	MPI_Request	send_request3;
 	MPI_Request recv_request;
+	MPI_Request recv_request2;
+	MPI_Request recv_request3;
+
 
 	// CREATING ENVIRONMENT
  	vector< vector<char>> env = create_environment(dimention);
@@ -187,15 +192,128 @@ int main(int argc, char *argv[])
 			int ierr=MPI_Irecv(arr,full_dimention,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
 			ierr=MPI_Wait(&recv_request,&status);
 		}
+		if (id == 2){
+			int ierr=MPI_Irecv(arr,full_dimention,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
+			ierr=MPI_Wait(&recv_request,&status);
+		}
+		if (id == 3){
+			int ierr=MPI_Irecv(arr,full_dimention,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
+			ierr=MPI_Wait(&recv_request,&status);
+		}
 
 		// SENDER SENDS
 		if (id == 0){
 			int ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 1,array_broadcast,MPI_COMM_WORLD,&send_request);
+			ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 2,array_broadcast,MPI_COMM_WORLD,&send_request2);
+			ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 3,array_broadcast,MPI_COMM_WORLD,&send_request3);
+
 			ierr=MPI_Wait(&send_request,&status);
+			ierr=MPI_Wait(&send_request2,&status);
+			ierr=MPI_Wait(&send_request3,&status);
 		}
 		
 		// RECEIVER ACTION
 		if (id == 1){
+
+			// LOCAL VARIABLES
+			int index = 0;
+			int division = full_dimention/numprocs;
+
+			// CREATING LOCAL ARRAYS
+			char * local_arr = new char[division];
+
+			// RECEIVER PART OF JOB
+			for (int i = id * division; i < ((id + 1)*division); ++i){
+
+				// CHECKING NEIGHBOURS
+				int neighbours = check_neighbours(arr, dimention, i);
+
+				// FILLING ARRAY WITH 0
+				// TODO: NECCESSARY?
+				local_arr[index] = 0;
+				if (arr[i] == 0){
+					if (neighbours == 1 || neighbours == 2){
+						local_arr[index] = 1;
+					}
+					else {
+						local_arr[index] = 0;
+					}
+
+				}
+				else {
+					if (neighbours > 2 || neighbours < 1){
+						local_arr[index] = 0;
+					}
+					else {
+						local_arr[index] = 1;
+					} 
+				}
+				++index;
+			}
+
+			// SENDING EXECUTED JOB
+			int ierr=MPI_Isend(local_arr, division, MPI_CHAR, 0, calculation, MPI_COMM_WORLD, &send_request);
+			ierr=MPI_Wait(&send_request, &status);
+
+			free(local_arr);
+			//free(b_arr);
+
+			// END OF RECEIVER ACTION
+			--iterations;
+		}
+
+		// RECEIVER ACTION 2
+		if (id == 2){
+
+			// LOCAL VARIABLES
+			int index = 0;
+			int division = full_dimention/numprocs;
+
+			// CREATING LOCAL ARRAYS
+			char * local_arr = new char[division];
+
+			// RECEIVER PART OF JOB
+			for (int i = id * division; i < ((id + 1)*division); ++i){
+
+				// CHECKING NEIGHBOURS
+				int neighbours = check_neighbours(arr, dimention, i);
+
+				// FILLING ARRAY WITH 0
+				// TODO: NECCESSARY?
+				local_arr[index] = 0;
+				if (arr[i] == 0){
+					if (neighbours == 1 || neighbours == 2){
+						local_arr[index] = 1;
+					}
+					else {
+						local_arr[index] = 0;
+					}
+
+				}
+				else {
+					if (neighbours > 2 || neighbours < 1){
+						local_arr[index] = 0;
+					}
+					else {
+						local_arr[index] = 1;
+					} 
+				}
+				++index;
+			}
+
+			// SENDING EXECUTED JOB
+			int ierr=MPI_Isend(local_arr, division, MPI_CHAR, 0, calculation, MPI_COMM_WORLD, &send_request);
+			ierr=MPI_Wait(&send_request, &status);
+
+			free(local_arr);
+			//free(b_arr);
+
+			// END OF RECEIVER ACTION
+			--iterations;
+		}
+
+		// RECEIVER ACTION 3
+		if (id == 3){
 
 			// LOCAL VARIABLES
 			int index = 0;
@@ -255,6 +373,8 @@ int main(int argc, char *argv[])
 			char * local_arr = new char[division];
 			char * next_arr = new char[full_dimention];
 			char * received_arr = new char[division];
+			char * received_arr2 = new char[division];
+			char * received_arr3 = new char[division];
 
 			// SENDER PART OF JOB
 			for (int i = id * division; i < ((id + 1)*division); ++i){
@@ -288,7 +408,11 @@ int main(int argc, char *argv[])
 			// MPI RECEIVING ACTION
 			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
 			int ierr=MPI_Irecv(received_arr,division,MPI_CHAR,1,calculation,MPI_COMM_WORLD,&recv_request);
+			ierr=MPI_Irecv(received_arr2,division,MPI_CHAR,2,calculation,MPI_COMM_WORLD,&recv_request2);
+			ierr=MPI_Irecv(received_arr3,division,MPI_CHAR,3,calculation,MPI_COMM_WORLD,&recv_request3);
 			ierr=MPI_Wait(&recv_request,&status);
+			ierr=MPI_Wait(&recv_request2,&status);
+			ierr=MPI_Wait(&recv_request3,&status);
 
 			// FILLING NEW ARRAY WITH -1
 			// TODO: REMOVE AS REDUNDANT
@@ -298,11 +422,17 @@ int main(int argc, char *argv[])
 
 			// FILLING NEW ARRAY
 			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
-			for (int i = 0; i < division; ++i){
+			for (int i = 0 * division; i < (0+1)*division; ++i){
 				next_arr[i] = local_arr[i];
 			}
-			for (int i = 32000000,j=0; i < division+32000000; ++i,++j){
+			for (int i = 1 * division ,j=0; i < (1+1) * division; ++i,++j){
 				next_arr[i] = received_arr[j];
+			}
+			for (int i = 2 * division ,j=0; i < (2+1) * division; ++i,++j){
+				next_arr[i] = received_arr2[j];
+			}
+			for (int i = 3 * division ,j=0; i < (3+1) * division; ++i,++j){
+				next_arr[i] = received_arr3[j];
 			}
 
 			// OPTIONAL PRINTING
@@ -315,12 +445,15 @@ int main(int argc, char *argv[])
 			// CLEANUP
 			free(local_arr);
 			free(received_arr);
+			free(received_arr2);
+			free(received_arr3);
 			free(next_arr);
 
 			// END OF SENDER ACTIONS
 			--iterations;
 
 			if (iterations < 2){
+				//print_array(arr, full_dimention);
 				int count = count_living(arr, dimention);
 				cout << "Living ones: " << count << endl;
 			}

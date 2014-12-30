@@ -135,9 +135,9 @@ int main(int argc, char *argv[])
 	int tag = 7;
 	int array_broadcast = 9;
 	int calculation = 8;
-	int count = 100;
-	int dimention = 100;
-	int full_dimention = 10000;
+	int count = 10;
+	int dimention = 10;
+	int full_dimention = 100;
 
 	//MPI_Status status;
 	//MPI_Request request;
@@ -148,15 +148,15 @@ int main(int argc, char *argv[])
 	MPI_Request	send_request,recv_request;
 
 
-	const int size = 100;
+	const int size = 10;
 
- 	char buffi[10000] = {};
- 	char buffo[10000] = {};
- 	char buffc[10000];
+ 	//char buffi[16000000] = {};
+ 	//char buffo[16000000] = {};
+ 	//char buffc[16000000];
 
- 	for (int i = 0; i < 10000; ++i){
- 		buffc[i] = 0;
- 	}
+ 	// for (int i = 0; i < 16000000; ++i){
+ 	// 	buffc[i] = 0;
+ 	// }
 
  	//print_array(buffo, 100);
 
@@ -166,14 +166,16 @@ int main(int argc, char *argv[])
 	char * arr = vector_to_array(env, dimention);
 	char * b_arr = array_copy(arr, full_dimention);
 
-	int	        buffsize = 10000;
-	char       *sendbuff,*recvbuff;
-	sendbuff=(char *)malloc(sizeof(char)*buffsize);
-	recvbuff=(char *)malloc(sizeof(char)*buffsize);
+	env.clear();
 
-	for(int i=0;i<buffsize;i++){
-     sendbuff[i]=0;
-   	}
+	int	        buffsize = 100;
+	char       *sendbuff,*recvbuff;
+	//sendbuff=(char *)malloc(sizeof(char)*buffsize);
+	//recvbuff=(char *)malloc(sizeof(char)*buffsize);
+
+	// for(int i=0;i<buffsize;i++){
+ //     sendbuff[i]=0;
+ //   	}
 
 	//print_array(arr, full_dimention);
 
@@ -226,13 +228,13 @@ int main(int argc, char *argv[])
 	int id;
 	MPI_Comm_rank(MPI_COMM_WORLD,&id);
 
-	int iterations = 200;
+	int iterations = 10;
 
 	while (iterations > 0){
 		if (id == 1){
 			
 			//MPI_Irecv(&buffc,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-			int ierr=MPI_Irecv(b_arr,buffsize,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
+			int ierr=MPI_Irecv(arr,buffsize,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
 			ierr=MPI_Wait(&recv_request,&status);
 			//print_array(recvbuff, full_dimention);
 			//cout << "Buff received" << endl;
@@ -268,9 +270,9 @@ int main(int argc, char *argv[])
 
 			int index = 0;
 			for (int i = id * division; i < ((id + 1)*division); ++i){
-				int neighbours = check_neighbours(b_arr, dimention, i);
+				int neighbours = check_neighbours(arr, dimention, i);
 				local_arr[index] = 0;
-				if (b_arr[i] == 0){
+				if (arr[i] == 0){
 					if (neighbours == 1 || neighbours == 2){
 						local_arr[index] = 1;
 					}
@@ -289,6 +291,8 @@ int main(int argc, char *argv[])
 			int ierr=MPI_Isend(local_arr,division,MPI_CHAR, 0,calculation,MPI_COMM_WORLD,&send_request);
 			ierr=MPI_Wait(&send_request,&status);
 			//cout << "Buff sent" << endl;
+			free(local_arr);
+			//free(b_arr);
 
 		}
 		if (id == 0){
@@ -345,13 +349,15 @@ int main(int argc, char *argv[])
 			for (int i = 0; i < division; ++i){
 				next_arr[i] = local_arr[i];
 			}
-			for (int i = 5000,j=0; i < division+5000; ++i,++j){
+			for (int i = 50,j=0; i < division+50; ++i,++j){
 				next_arr[i] = received_arr[j];
 			}
-
+			free(local_arr);
+			free(received_arr);
 			print_array(next_arr, full_dimention);
 
 			arr = array_copy(next_arr, full_dimention);
+			free(next_arr);
 
 		}
 
@@ -370,64 +376,64 @@ int main(int argc, char *argv[])
 
 
 
- 	// MPI INIT
-	MPI_Init(&argc,&argv);
+ // 	// MPI INIT
+	// MPI_Init(&argc,&argv);
 
-	//int numprocs;
-	MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
+	// //int numprocs;
+	// MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
 
-	//int id;
-	MPI_Comm_rank(MPI_COMM_WORLD,&id);
+	// //int id;
+	// MPI_Comm_rank(MPI_COMM_WORLD,&id);
 
 	 
-	if(id == 0){
-		//MPI_Isend(&buffi,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-		//MPI_Isend(&buffi,count,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request);
-		//MPI_Isend(&buffi,count,MPI_CHAR,2,tag,MPI_COMM_WORLD,&request);
-		//MPI_Isend(&buffi,count,MPI_CHAR,3,tag,MPI_COMM_WORLD,&request);
-	}
-	if(id == 0){
-		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-	}
-	if(id == 1){
-		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-	}
-	if(id == 2){
-		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-	}
-	if(id == 3){
-		//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-	}
+	// if(id == 0){
+	// 	//MPI_Isend(&buffi,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+	// 	//MPI_Isend(&buffi,count,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request);
+	// 	//MPI_Isend(&buffi,count,MPI_CHAR,2,tag,MPI_COMM_WORLD,&request);
+	// 	//MPI_Isend(&buffi,count,MPI_CHAR,3,tag,MPI_COMM_WORLD,&request);
+	// }
+	// if(id == 0){
+	// 	//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+	// }
+	// if(id == 1){
+	// 	//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+	// }
+	// if(id == 2){
+	// 	//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+	// }
+	// if(id == 3){
+	// 	//MPI_Irecv(&buffo,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+	// }
 
-	//MPI_Wait(&request,&status);
-	if(id == 0){
-		printf("processor %d sent %d\n",id,(int)buffi[0]);
-		printf("processor %d sent %d\n",id,(int)buffi[0]);
-		printf("processor %d sent %d\n",id,(int)buffi[0]);
-		printf("processor %d sent %d\n",id,(int)buffi[0]);
-	}
-	if(id == 0){
-		for (unsigned int i = 0; i < count; ++i){
-			printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
-		}
-	}
-	if(id == 1){
-		for (unsigned int i = 0; i < count; ++i){
-			printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
-		}
-	}
-	if(id == 2){
-		for (unsigned int i = 0; i < count; ++i){
-			printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
-		}
-	}
-	if(id == 3){
-		for (unsigned int i = 0; i < count; ++i){
-			printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
-		}
-	}
+	// //MPI_Wait(&request,&status);
+	// if(id == 0){
+	// 	// printf("processor %d sent %d\n",id,(int)buffi[0]);
+	// 	// printf("processor %d sent %d\n",id,(int)buffi[0]);
+	// 	// printf("processor %d sent %d\n",id,(int)buffi[0]);
+	// 	// printf("processor %d sent %d\n",id,(int)buffi[0]);
+	// }
+	// if(id == 0){
+	// 	for (unsigned int i = 0; i < count; ++i){
+	// 		printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
+	// 	}
+	// }
+	// if(id == 1){
+	// 	for (unsigned int i = 0; i < count; ++i){
+	// 		printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
+	// 	}
+	// }
+	// if(id == 2){
+	// 	for (unsigned int i = 0; i < count; ++i){
+	// 		printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
+	// 	}
+	// }
+	// if(id == 3){
+	// 	for (unsigned int i = 0; i < count; ++i){
+	// 		printf("processor %d got %d - %d\n",id,i,(int)buffo[i]);
+	// 	}
+	// }
 
-	MPI_Finalize();
+	// MPI_Finalize();
 
 	return 0;
 }
