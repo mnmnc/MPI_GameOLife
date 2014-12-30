@@ -22,10 +22,10 @@ int main(int argc, char *argv[])
     const int size = 2;
 
  	char * buff_in = new char[size];
- 	char * buff_out = new char[size];
- 	for (unsigned int i = 0; i < sizeof(buff_in)/sizeof(buff_in[0]); ++i){
- 		buff_in[i] = i;
- 		buff_out[i] = i;
+ 	//char * buff_out = new char[size];
+ 	for (unsigned int i = 0; i < size; ++i){
+ 		buff_in[i] = 0;
+ 		//buff_out[i] = i;
  	}
 
     MPI_Init(&argc,&argv);
@@ -40,54 +40,65 @@ int main(int argc, char *argv[])
     destination3=3;
     count=2;
     request=MPI_REQUEST_NULL;
-    int iterations = 2;
+    int iterations = 1;
 
     while (iterations > 0){
+    	char * buff_out = new char[size];
 	    if(myid == source){
 
-	      for (unsigned int i = 0; i < sizeof(buff_in)/sizeof(buff_in[0]); ++i){
+	      for (unsigned int i = 0; i < size; ++i){
 	      	buff_in[i] = 0;
 	      }
-
-	      MPI_Isend(&buff_in,count,MPI_CHAR,destination1,tag,MPI_COMM_WORLD,&request);
-	      MPI_Isend(&buff_in,count,MPI_CHAR,destination2,tag,MPI_COMM_WORLD,&request);
-	      MPI_Isend(&buff_in,count,MPI_CHAR,destination3,tag,MPI_COMM_WORLD,&request);
+	      MPI_Isend(&buff_in,count,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+	      MPI_Isend(&buff_in,count,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request);
+	      MPI_Isend(&buff_in,count,MPI_CHAR,2,tag,MPI_COMM_WORLD,&request);
+	      MPI_Isend(&buff_in,count,MPI_CHAR,3,tag,MPI_COMM_WORLD,&request);
 	    }
-
+	    if(myid == 0){
+	    	buff_out = new char[size];
+	        MPI_Irecv(&buff_out,count,MPI_CHAR,source,tag,MPI_COMM_WORLD,&request);
+	    }
 	    if(myid == destination1){
+	    	buff_out = new char[size];
 	        MPI_Irecv(&buff_out,count,MPI_CHAR,source,tag,MPI_COMM_WORLD,&request);
 	    }
 	    if(myid == destination2){
+	    	buff_out = new char[size];
 	        MPI_Irecv(&buff_out,count,MPI_CHAR,source,tag,MPI_COMM_WORLD,&request);
 	    }
 	    if(myid == destination3){
+	    	buff_out = new char[size];
 	        MPI_Irecv(&buff_out,count,MPI_CHAR,source,tag,MPI_COMM_WORLD,&request);
 	    }
 
 	    MPI_Wait(&request,&status);
 	    if(myid == source){
 	      printf("processor %d  sent %d\n",myid,(int)buff_in[0]);
+	      printf("processor %d  sent %d\n",myid,(int)buff_in[0]);
 	      printf("processor %d  sent %d\n",myid,(int)buff_in[1]);
-	      printf("processor %d  sent %d\n",myid,(int)buff_in[2]);
+	      printf("processor %d  sent %d\n",myid,(int)buff_in[0]);
+	      
+	    }
+	    if(myid == 0){
+	      for (unsigned int i = 0; i < count; ++i){
+	      	printf("%d ppprocessor %d  got %d - %d\n",iterations, myid,i,(int)buff_out[i]);
+	      }
 	      --iterations;
 	    }
 	    if(myid == destination1){
-	      
-	      for (unsigned int i = 0; i < sizeof(buff_out)/sizeof(buff_out[0]); ++i){
-
+	      for (unsigned int i = 0; i < count; ++i){
 	      	printf("%d processor %d  got %d - %d\n",iterations, myid,i,(int)buff_out[i]);
 	      }
 	      --iterations;
 	    }
 	    if(myid == destination2){
-	      
-	      for (unsigned int i = 0; i < sizeof(buff_out)/sizeof(buff_out[0]); ++i){
+	      for (unsigned int i = 0; i < count; ++i){
 	      	printf("%d processor %d  got %d - %d\n",iterations,myid,i,(int)buff_out[i]);
 	      }
 	      --iterations;
 	    }
 	    if(myid == destination3){
-	      for (unsigned int i = 0; i < sizeof(buff_out)/sizeof(buff_out[0]); ++i){
+	      for (unsigned int i = 0; i < count; ++i){
 	      	printf("%d processor %d  got %d - %d\n",iterations,myid,i,(int)buff_out[i]);
 	      }
 	      --iterations;

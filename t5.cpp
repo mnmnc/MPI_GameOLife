@@ -160,8 +160,6 @@ int main(int argc, char *argv[])
 	// VECTOR TERMINATION
 	env.clear();
 
-	
-
 	// MPI INIT
 	MPI_Init(&argc,&argv);
 
@@ -173,11 +171,6 @@ int main(int argc, char *argv[])
 
 	// SET ITERATION COUNT
 	int iterations = 400;
-
-	// if (id == 0){
-	// 	// PRINT INITIAL
-	// 	print_array(arr, full_dimention);
-	// }
 
 	// ITERATE
 	while (iterations > 0){
@@ -217,18 +210,11 @@ int main(int argc, char *argv[])
 					if (neighbours == 1 || neighbours == 2){
 						local_arr[index] = 1;
 					}
-					else {
-						local_arr[index] = 0;
-					}
-
 				}
 				else {
 					if (neighbours > 2 || neighbours < 1){
 						local_arr[index] = 0;
 					}
-					else {
-						local_arr[index] = 1;
-					} 
 				}
 				++index;
 			}
@@ -256,6 +242,7 @@ int main(int argc, char *argv[])
 			char * next_arr = new char[full_dimention];
 			char * received_arr = new char[division];
 
+
 			// SENDER PART OF JOB
 			for (int i = id * division; i < ((id + 1)*division); ++i){
 
@@ -266,21 +253,15 @@ int main(int argc, char *argv[])
 				// TODO: NECCESSARY?
 				local_arr[index] = 0;
 
-				if ((int)arr[i] == 0){
+				if (arr[i] == 0){
 					if (neighbours == 1 || neighbours == 2){
 						local_arr[index] = 1;
-					}
-					else {
-						local_arr[index] = 0;
 					}
 				}
 				else {
 					if (neighbours > 2 || neighbours < 1){
 						local_arr[index] = 0;
 					}
-					else {
-						local_arr[index] = 1;
-					} 
 				}
 				++index;
 			}
@@ -320,7 +301,7 @@ int main(int argc, char *argv[])
 			// END OF SENDER ACTIONS
 			--iterations;
 
-			if (iterations < 2){
+			if (iterations == 0){
 				int count = count_living(arr, dimention);
 				cout << "Living ones: " << count << endl;
 			}

@@ -150,17 +150,17 @@ void life(char arr[], int dimention, int iterations){
 		--iterations;
 		free(next_array);
 
-		// if (iterations < 6) {
-		// 	int count = count_living(current, dimention);
-		// 	cout << "[NFO] Living in iteration "<< iterations << "/" << max_iterations <<" : " << count << endl;
-		// }
+		if (iterations < 6) {
+			int count = count_living(current, dimention);
+			cout << "[NFO] Living in iteration "<< iterations << "/" << max_iterations <<" : " << count << endl;
+		}
 	}
 }
 
 int main(){
 	
 	int dimention = 10;
-	int iterations = 10;
+	int iterations = 2;
 
 	vector< vector<char>> env = create_environment(dimention);
 	env = set_diagonal(env);
