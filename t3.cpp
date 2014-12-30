@@ -5,6 +5,9 @@
 #include <vector>
 #include <iostream>
 #include <math.h>
+#include <array>
+
+
  
 /************************************************************
 This is a simple isend/ireceive program in MPI
@@ -125,22 +128,21 @@ int main(int argc, char *argv[])
 
 	//MPI_Status status;
 	//MPI_Request request;
-	MPI_Request request[4];
-    MPI_Status status[4];
-	request[0] = MPI_REQUEST_NULL;
-	request[1] = MPI_REQUEST_NULL;
-	request[2] = MPI_REQUEST_NULL;
-	request[3] = MPI_REQUEST_NULL;
+	MPI_Request request;
+    MPI_Status status;
+	request = MPI_REQUEST_NULL;
+
+	MPI_Request	send_request,recv_request;
+
 
 	const int size = 10;
 
  	char buffi[100] = {};
  	char buffo[100] = {};
- 	char buffc[100] = {};
+ 	char buffc[100];
 
  	for (int i = 0; i < 100; ++i){
- 		buffi[i] = i;
- 		buffo[i] = i;
+ 		buffc[i] = 0;
  	}
 
  	//print_array(buffo, 100);
@@ -151,45 +153,54 @@ int main(int argc, char *argv[])
 	char * arr = vector_to_array(env, dimention);
 	char * b_arr = array_copy(arr, full_dimention);
 
+	int	        buffsize = 100;
+	char       *sendbuff,*recvbuff;
+	sendbuff=(char *)malloc(sizeof(char)*buffsize);
+	recvbuff=(char *)malloc(sizeof(char)*buffsize);
+
+	for(int i=0;i<buffsize;i++){
+     sendbuff[i]=0;
+   	}
+
 	//print_array(arr, full_dimention);
 
-	int test = 0;
-	if (test == 1){
+	// int test = 0;
+	// if (test == 1){
 
-		cout << "ITERATIONS TEST" << endl;
+	// 	cout << "ITERATIONS TEST" << endl;
 
-		int iterations = 13;
+	// 	int iterations = 13;
 
-		char * b_arr = array_copy(arr, full_dimention);
+	// 	char * b_arr = array_copy(arr, full_dimention);
 
-		while (iterations > 0){
+	// 	while (iterations > 0){
 
-			char * c_arr = array_copy(b_arr, full_dimention);
+	// 		char * c_arr = array_copy(b_arr, full_dimention);
 
-			for (int i = 0; i < full_dimention; ++i){
+	// 		for (int i = 0; i < full_dimention; ++i){
 
-				int neighbours = check_neighbours(b_arr, dimention, i);
+	// 			int neighbours = check_neighbours(b_arr, dimention, i);
 
-				if (b_arr[i] == 0){
-					if (neighbours == 1 || neighbours == 2){
-						c_arr[i] = 1;
-					}
-				}
-				else {
-					if (neighbours > 2 || neighbours < 1){
-						c_arr[i] = 0;
-					}
-				}
-			}
-			cout << iterations << endl;
-		 	print_array(c_arr, full_dimention);
+	// 			if (b_arr[i] == 0){
+	// 				if (neighbours == 1 || neighbours == 2){
+	// 					c_arr[i] = 1;
+	// 				}
+	// 			}
+	// 			else {
+	// 				if (neighbours > 2 || neighbours < 1){
+	// 					c_arr[i] = 0;
+	// 				}
+	// 			}
+	// 		}
+	// 		cout << iterations << endl;
+	// 	 	print_array(c_arr, full_dimention);
 
-		 	copy(c_arr, c_arr + (full_dimention), b_arr);
-		 	--iterations;
-		 	free(c_arr);
+	// 	 	copy(c_arr, c_arr + (full_dimention), b_arr);
+	// 	 	--iterations;
+	// 	 	free(c_arr);
 
-		}
-	}
+	// 	}
+	// }
 
 	// CORRECT ABOVE
 
@@ -205,27 +216,40 @@ int main(int argc, char *argv[])
 	int iterations = 2;
 
 	//while (iterations > 0){
-
-		if (id == 0){
-			MPI_Isend(&arr,full_dimention,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request[0]);
-			for (int i = 0; i < 100; ++i){
-				cout << i << ": " << (int) arr[i] << endl;
-			}
-		}
 		if (id == 1){
-			char buffc[100] = {};
-			MPI_Irecv(&buffc,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request[1]);
+			
+			//MPI_Irecv(&buffc,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
+			int ierr=MPI_Irecv(recvbuff,buffsize,MPI_CHAR,0,tag,MPI_COMM_WORLD,&recv_request);
+			ierr=MPI_Wait(&recv_request,&status);
+			//print_array(recvbuff, full_dimention);
+
+
 		}
-		MPI_Wait(&request[0],&status[0]);
-		MPI_Wait(&request[1],&status[1]);
+		if (id == 0){
+
+			//MPI_Isend(&arr,full_dimention,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request);
+			int ierr=MPI_Isend(arr,buffsize,MPI_CHAR, 1,tag,MPI_COMM_WORLD,&send_request);
+			//print_array(arr, full_dimention);
+			ierr=MPI_Wait(&send_request,&status);
+		}
+		
+		//MPI_Wait(&request,&status);
+
+		
+   		
+
 		if (id == 1){
 			--iterations;
+			
 			//cout << " Array "<< iterations <<" has been received." << endl;
 			//print_array(buffo, 100);
 
-			for (int i = 0; i < 100; ++i){
-				cout << i << ": " << (int) buffc[i] << endl;
-			}
+			print_array(recvbuff, full_dimention);
+			// int sum = 0;
+			// for (int i = 0; i < full_dimention;++i){
+			// 	sum += recvbuff[i];
+			// }
+			// cout << sum << endl;
 		}
 
 		--iterations;
