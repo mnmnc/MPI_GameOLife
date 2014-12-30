@@ -70,6 +70,17 @@ void print_array(char arr[], int full_dimention){
 	}
 }
 
+void print_division_array(char arr[], int full_size, int dimention){
+	// PRINTING ARRAY
+	cout << endl;
+	for (int i = 0; i < full_size; ++i){
+		cout << (int)arr[i];
+		if (((i + 1) % dimention) == 0 && i / 1 != 0){
+			cout << endl;
+		}
+	}
+}
+
 char * array_copy(char arr[], int full_dimention){
 	char * new_arr = new char[full_dimention];
 	copy(arr, arr + (full_dimention), new_arr);
@@ -122,6 +133,8 @@ int main(int argc, char *argv[])
 {
 	 
 	int tag = 7;
+	int array_broadcast = 9;
+	int calculation = 8;
 	int count = 10;
 	int dimention = 10;
 	int full_dimention = 100;
@@ -219,18 +232,19 @@ int main(int argc, char *argv[])
 		if (id == 1){
 			
 			//MPI_Irecv(&buffc,full_dimention,MPI_CHAR,0,tag,MPI_COMM_WORLD,&request);
-			int ierr=MPI_Irecv(recvbuff,buffsize,MPI_CHAR,0,tag,MPI_COMM_WORLD,&recv_request);
+			int ierr=MPI_Irecv(b_arr,buffsize,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
 			ierr=MPI_Wait(&recv_request,&status);
 			//print_array(recvbuff, full_dimention);
-
+			cout << "Buff received" << endl;
 
 		}
 		if (id == 0){
 
 			//MPI_Isend(&arr,full_dimention,MPI_CHAR,1,tag,MPI_COMM_WORLD,&request);
-			int ierr=MPI_Isend(arr,buffsize,MPI_CHAR, 1,tag,MPI_COMM_WORLD,&send_request);
+			int ierr=MPI_Isend(arr,buffsize,MPI_CHAR, 1,array_broadcast,MPI_COMM_WORLD,&send_request);
 			//print_array(arr, full_dimention);
 			ierr=MPI_Wait(&send_request,&status);
+			cout << "Buff sent" << endl;
 		}
 		
 		//MPI_Wait(&request,&status);
@@ -241,18 +255,60 @@ int main(int argc, char *argv[])
 		if (id == 1){
 			--iterations;
 			
-			//cout << " Array "<< iterations <<" has been received." << endl;
-			//print_array(buffo, 100);
-
-			print_array(recvbuff, full_dimention);
-			// int sum = 0;
-			// for (int i = 0; i < full_dimention;++i){
-			// 	sum += recvbuff[i];
+			print_array(b_arr, full_dimention);
+			// for (int i = id; i < full_dimention/dimention; i+=numprocs){
+			// 	cout << "P1 Checking " << i << endl;
+			// 	for (int j = 0; j < dimention; ++j){
+			// 		cout << "\t -> " << (i*dimention)+j << endl; 
+			// 	}
 			// }
-			// cout << sum << endl;
+			int division = full_dimention/numprocs;
+			cout << division << endl;
+			char * local_arr = new char[division];
+			char l_arr[division];
+			int index = 0;
+			for (int i = id * division; i < ((id + 1)*division); ++i){
+				int neighbours = check_neighbours(b_arr, dimention, i);
+				cout << i << " -> "<< neighbours << endl;
+				cout << "\t -> "<< (int)b_arr[i] << endl;
+				local_arr[index] = 0;
+				if (b_arr[i] == 0){
+					cout << "\t\t- 0 "<< endl;
+					if (neighbours == 1 || neighbours == 2){
+						cout << "\t\t\t setting to 1 "<< endl;
+						local_arr[index] = 1;
+					}
+				}
+				else {
+					cout << "\t\t- 1 "<< endl;
+					if (neighbours > 2 || neighbours < 1){
+						cout << "\t\t\t setting to 0 "<< endl;
+						local_arr[index] = 0;
+					}
+				}
+				++index;
+			}
+			for (int i = 0; i < division; ++i){
+				cout << (int)local_arr[i] << " ";
+			}
+			print_division_array(local_arr, division, dimention);
+
+		}
+		if (id == 0){
+			--iterations;
+			
+			// for (int i = id; i < full_dimention/dimention; i+=numprocs){
+			// 	cout << "P0 Checking " << i << endl;
+			// 	for (int j = 0; j < dimention; ++j){
+			// 		cout << "\t -> " << (i*dimention)+j << endl; 
+			// 	}
+			// }
+
 		}
 
-		--iterations;
+
+
+		//--iterations;
 	//}
 
 	MPI_Finalize();
