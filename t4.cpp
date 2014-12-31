@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
 	int calculation = 8;
 
 	// DATA SIZES
-	int dimention = 8000;
-	int full_dimention = 64000000;
+	int dimention = 10;
+	int full_dimention = 100;
 
 	// CONTROL VARIABLES
 	MPI_Request request;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD,&id);
 
 	// SET ITERATION COUNT
-	int iterations = 400;
+	int iterations = 10;
 
 	// if (id == 0){
 	// 	// PRINT INITIAL
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
 			for (int i = 0; i < division; ++i){
 				next_arr[i] = local_arr[i];
 			}
-			for (int i = 32000000,j=0; i < division+32000000; ++i,++j){
+			for (int i = 5000,j=0; i < division+5000; ++i,++j){
 				next_arr[i] = received_arr[j];
 			}
 
@@ -321,6 +321,7 @@ int main(int argc, char *argv[])
 			--iterations;
 
 			if (iterations < 2){
+				print_array(arr, full_dimention);
 				int count = count_living(arr, dimention);
 				cout << "Living ones: " << count << endl;
 			}

@@ -159,7 +159,7 @@ void life(char arr[], int dimention, int iterations){
 
 int main(){
 	
-	int dimention = 20;
+	int dimention = 10;
 	int iterations = 10;
 
 	vector< vector<char>> env = create_environment(dimention);
@@ -168,35 +168,20 @@ int main(){
 	char * arr = vector_to_array(env, dimention);
 	env.clear();
 	
-
-	// PRINTING ARRAY
 	
-	for (int i = 0; i < (dimention*dimention); ++i){
-		cout << (int)arr[i];
 
-		if (((i + 1) % dimention) == 0 && i / 1 != 0){
-			cout << endl;
-		}
+	char * r_arr[4];
+
+	for (int i = 0; i < 4; ++i){
+		char * tarr = new char[dimention * dimention];
+		copy(arr, arr + (dimention*dimention), tarr);
+		r_arr[i] = tarr;
 	}
 
-	//int c = check_neighbours(arr, dimention, 24);
-	//cout << c << endl;
+	for (int i = 0; i < 4; ++i){
+		cout << "r_arr[" << i <<"] " << (int)r_arr[i][0] << endl;
+	}
 
-
-
-	
-	//int * n_arr = process_life(arr, dimention);
-
-	//// PRINTING ARRAY
-	//for (int i = 0; i < (dimention*dimention); ++i){
-	//	cout << n_arr[i];
-	//	if (((i + 1) % dimention) == 0 && i / 1 != 0){
-	//		cout << endl;
-	//	}
-	//}
-	
-
-	life(arr, dimention, iterations);
 
 	//system("PAUSE");
 	return 0;
