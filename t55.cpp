@@ -6,6 +6,8 @@
 #include <iostream>
 #include <math.h>
 #include <array>
+#include <time.h>
+#include <ctime>
 
 
 using namespace std;
@@ -100,27 +102,52 @@ int check_neighbours(char arr[], int dimention, int x){
 		c = arr[x - dimention + 1];
 	}
 
+	count = a + b + c;
+	if (count > 2){
+		return 8;
+	}
+
 	if (x - 1 > -1 && ((int)((x - 1) / dimention)) == ((int)(x / dimention))){
 		d = arr[x - 1];
+	}
+
+	count += d;
+	if (count > 2){
+		return 8;
 	}
 
 	if (x + 1 < dimention*dimention && ((int)((x + 1) / dimention)) == ((int)(x / dimention))){
 		e = arr[x + 1];
 	}
 
+	count += e;
+	if (count > 2){
+		return 8;
+	}
+
 	if ((x + dimention - 1) < dimention*dimention && ((int)((x + dimention - 1) / dimention)) == ((int)((x + dimention) / dimention))){
 		f = arr[x + dimention - 1];
+	}
+
+	count += f;
+	if (count > 2){
+		return 8;
 	}
 
 	if ((x + dimention) < dimention*dimention ){
 		g = arr[x + dimention];
 	}
 
+	count += g;
+	if (count > 2){
+		return 8;
+	}
+
 	if ((x + dimention + 1) < dimention*dimention && ((int)((x + dimention + 1) / dimention)) == ((int)((x + dimention) / dimention))){
 		h = arr[x + dimention + 1];
 	}
 
-	count = a + b + c + d + e + f + g + h;
+	count += h;
 
 	return count;
 }
@@ -140,8 +167,8 @@ int main(int argc, char *argv[])
 	int calculation = 8;
 
 	// DATA SIZES
-	int dimention = 20;
-	int full_dimention = 400;
+	int dimention = 8000;
+	int full_dimention = dimention*dimention;
 
 	// CONTROL VARIABLES
 	MPI_Request request;
@@ -159,6 +186,9 @@ int main(int argc, char *argv[])
 
 	// VECTOR TERMINATION
 	env.clear();
+
+	// CAPTURE TIME
+	clock_t begin_pt = clock();
 
 	// MPI INIT
 	MPI_Init(&argc,&argv);
@@ -180,7 +210,7 @@ int main(int argc, char *argv[])
 	MPI_Request new_send_requests[numprocs];
 
 	// SET ITERATION COUNT
-	int iterations = 10;
+	int iterations = 400;
 
 	 // if (id == 0){
 	 // 	// PRINT INITIAL
@@ -199,6 +229,7 @@ int main(int argc, char *argv[])
 
 		// SENDER SENDS
 		if (id == 0){
+
 			int ierr;
 			for (int i = 1; i < numprocs; i++){
 				ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, i,array_broadcast,MPI_COMM_WORLD,&new_send_requests[i]);
@@ -218,15 +249,18 @@ int main(int argc, char *argv[])
 			// CREATING LOCAL ARRAYS
 			char * local_arr = new char[division];
 
+			clock_t receive_time;
+			if (id == 1){
+				// TIME TAKE
+				receive_time = clock();
+			}
+
 			// RECEIVER PART OF JOB
 			for (int i = id * division; i < ((id + 1)*division); ++i){
 
 				// CHECKING NEIGHBOURS
 				int neighbours = check_neighbours(arr, dimention, i);
 
-				// FILLING ARRAY WITH 0
-				// TODO: NECCESSARY?
-				local_arr[index] = 0;
 				if (arr[i] == 0){
 					if (neighbours == 1 || neighbours == 2){
 						local_arr[index] = 1;
@@ -245,16 +279,27 @@ int main(int argc, char *argv[])
 					} 
 				}
 				++index;
+
 			}
+
+			if (id == 1){
+				// TIME TAKE
+				cout << " Single receiver array part parsing time :\t" << double(clock() - receive_time) / CLOCKS_PER_SEC << endl;
+			}
+			
 
 			// SENDING EXECUTED JOB
 			int ierr=MPI_Isend(local_arr, division, MPI_CHAR, 0, calculation, MPI_COMM_WORLD, &send_request);
 			ierr=MPI_Wait(&send_request, &status);
 
+			
+
 			free(local_arr);
 
 			// END OF RECEIVER ACTION
 			--iterations;
+
+			
 		}
 
 
@@ -281,10 +326,6 @@ int main(int argc, char *argv[])
 				// CHECKING NEIGHBOURS
 				int neighbours = check_neighbours(arr, dimention, i);
 
-				// FILLING ARRAY WITH 0
-				// TODO: NECCESSARY?
-				r_arr[id][index] = 0;
-
 				if ((int)arr[i] == 0){
 					if (neighbours == 1 || neighbours == 2){
 						r_arr[id][index] = 1;
@@ -304,6 +345,8 @@ int main(int argc, char *argv[])
 				++index;
 			}
 
+			
+
 			// MPI RECEIVING ACTION
 			int ierr;
 			for (int i = 1; i < numprocs; i++){
@@ -314,11 +357,13 @@ int main(int argc, char *argv[])
 				ierr=MPI_Wait(&new_request[i],&status);
 			}
 
+			
+
 			// FILLING NEW ARRAY WITH -1
 			// TODO: REMOVE AS REDUNDANT
-			for (int i = 0; i < full_dimention; ++i){
-				next_arr[i] = -1;
-			}
+			// for (int i = 0; i < full_dimention; ++i){
+			// 	next_arr[i] = -1;
+			// }
 
 			// FILLING NEW ARRAY
 			index = 0;
@@ -348,11 +393,15 @@ int main(int argc, char *argv[])
 			--iterations;
 
 			if (iterations < 2){
-				print_array(arr, full_dimention);
+				//print_array(arr, full_dimention);
 				int count = count_living(arr, dimention);
 				cout << "Living ones: " << count << endl;
 			}
 		}
+	}
+
+	if (id == 0){
+		cout << " Time spent:\t\t" << double(clock() - begin_pt) / CLOCKS_PER_SEC << endl;
 	}
 
 	MPI_Finalize();
