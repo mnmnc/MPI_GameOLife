@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
 	int calculation = 8;
 
 	// DATA SIZES
-	int dimention = 10;
-	int full_dimention = 100;
+	int dimention = 1000;
+	int full_dimention = 1000000;
 
 	// CONTROL VARIABLES
 	MPI_Request request;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD,&id);
 
 	// SET ITERATION COUNT
-	int iterations = 10;
+	int iterations = 1000;
 
 	// if (id == 0){
 	// 	// PRINT INITIAL
@@ -256,6 +256,14 @@ int main(int argc, char *argv[])
 			char * next_arr = new char[full_dimention];
 			char * received_arr = new char[division];
 
+			char * r_arr[numprocs];
+			for (int i = 0; i < numprocs; ++i){
+				char * tarr = new char[division];
+				copy(arr, arr + (division), tarr);
+				r_arr[i] = tarr;
+			}
+
+
 			// SENDER PART OF JOB
 			for (int i = id * division; i < ((id + 1)*division); ++i){
 
@@ -264,30 +272,30 @@ int main(int argc, char *argv[])
 
 				// FILLING ARRAY WITH 0
 				// TODO: NECCESSARY?
-				local_arr[index] = 0;
+				r_arr[id][i] = 0;
 
 				if ((int)arr[i] == 0){
 					if (neighbours == 1 || neighbours == 2){
-						local_arr[index] = 1;
+						r_arr[id][i] = 1;
 					}
 					else {
-						local_arr[index] = 0;
+						r_arr[id][i] = 0;
 					}
 				}
 				else {
 					if (neighbours > 2 || neighbours < 1){
-						local_arr[index] = 0;
+						r_arr[id][i] = 0;
 					}
 					else {
-						local_arr[index] = 1;
+						r_arr[id][i] = 1;
 					} 
 				}
-				++index;
 			}
 
 			// MPI RECEIVING ACTION
 			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
-			int ierr=MPI_Irecv(received_arr,division,MPI_CHAR,1,calculation,MPI_COMM_WORLD,&recv_request);
+			int receiver_id = 1;
+			int ierr=MPI_Irecv(r_arr[receiver_id],division,MPI_CHAR,receiver_id,calculation,MPI_COMM_WORLD,&recv_request);
 			ierr=MPI_Wait(&recv_request,&status);
 
 			// FILLING NEW ARRAY WITH -1
@@ -299,10 +307,12 @@ int main(int argc, char *argv[])
 			// FILLING NEW ARRAY
 			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
 			for (int i = 0; i < division; ++i){
-				next_arr[i] = local_arr[i];
+				next_arr[i] = r_arr[id][i];
 			}
-			for (int i = 5000,j=0; i < division+5000; ++i,++j){
-				next_arr[i] = received_arr[j];
+
+
+			for (int i = receiver_id*division,j=0; i < (receiver_id*division)+division; ++i,++j){
+				next_arr[i] = r_arr[receiver_id][j];
 			}
 
 			// OPTIONAL PRINTING
@@ -317,11 +327,14 @@ int main(int argc, char *argv[])
 			free(received_arr);
 			free(next_arr);
 
+			for (int i = 0; i < numprocs; ++i){
+				free(r_arr[i]);
+			}
+
 			// END OF SENDER ACTIONS
 			--iterations;
 
 			if (iterations < 2){
-				print_array(arr, full_dimention);
 				int count = count_living(arr, dimention);
 				cout << "Living ones: " << count << endl;
 			}

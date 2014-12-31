@@ -6,6 +6,8 @@
 #include <iostream>
 #include <math.h>
 #include <array>
+#include <time.h>
+#include <ctime>
 
 
 using namespace std;
@@ -77,50 +79,61 @@ void print_division_array(char arr[], int full_size, int dimention){
 	}
 }
 
-char * array_copy(char arr[], int full_dimention){
-	char * new_arr = new char[full_dimention];
-	copy(arr, arr + (full_dimention), new_arr);
-	return new_arr;
-}
 
 int check_neighbours(char arr[], int dimention, int x){
 	int count = 0;
-	char a, b, c, d, e, f, g, h = 0;
-	a = b = c = d = e = f = g = h;
 
 	if ((x - dimention - 1) > -1 && ((int)((x - dimention - 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		a = arr[x - dimention - 1];
+		count += arr[x - dimention - 1];
 	}
 
 	if (x - dimention > -1){
-		b = arr[x - dimention];
+		count += arr[x - dimention];
 	}
 
 	if ((x - dimention + 1 > 0) && ((int)((x - dimention + 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		c = arr[x - dimention + 1];
+		count += arr[x - dimention + 1];
+	}
+
+	if (count > 2){
+		return 8;
 	}
 
 	if (x - 1 > -1 && ((int)((x - 1) / dimention)) == ((int)(x / dimention))){
-		d = arr[x - 1];
+		count += arr[x - 1];
+	}
+
+	if (count > 2){
+		return 8;
 	}
 
 	if (x + 1 < dimention*dimention && ((int)((x + 1) / dimention)) == ((int)(x / dimention))){
-		e = arr[x + 1];
+		count += arr[x + 1];
+	}
+
+	if (count > 2){
+		return 8;
 	}
 
 	if ((x + dimention - 1) < dimention*dimention && ((int)((x + dimention - 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		f = arr[x + dimention - 1];
+		count += arr[x + dimention - 1];
+	}
+
+	if (count > 2){
+		return 8;
 	}
 
 	if ((x + dimention) < dimention*dimention ){
-		g = arr[x + dimention];
+		count += arr[x + dimention];
+	}
+
+	if (count > 2){
+		return 8;
 	}
 
 	if ((x + dimention + 1) < dimention*dimention && ((int)((x + dimention + 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		h = arr[x + dimention + 1];
+		count += arr[x + dimention + 1];
 	}
-
-	count = a + b + c + d + e + f + g + h;
 
 	return count;
 }
@@ -140,8 +153,8 @@ int main(int argc, char *argv[])
 	int calculation = 8;
 
 	// DATA SIZES
-	int dimention = 10;
-	int full_dimention = 100;
+	int dimention = 8000;
+	int full_dimention = dimention*dimention;
 
 	// CONTROL VARIABLES
 	MPI_Request request;
@@ -160,7 +173,8 @@ int main(int argc, char *argv[])
 	// VECTOR TERMINATION
 	env.clear();
 
-	
+	// CAPTURE TIME
+	clock_t begin_pt = clock();
 
 	// MPI INIT
 	MPI_Init(&argc,&argv);
@@ -171,31 +185,49 @@ int main(int argc, char *argv[])
 	int id;
 	MPI_Comm_rank(MPI_COMM_WORLD,&id);
 
-	// SET ITERATION COUNT
-	int iterations = 10;
+	// DYNAMIC REQUESTS
+	int * req_arr[numprocs];
+	for (int i = 0; i < numprocs; ++i){
+		MPI_Request recv_request;
+		req_arr[i] = &recv_request;
+	}
 
-	// if (id == 0){
-	// 	// PRINT INITIAL
-	// 	print_array(arr, full_dimention);
-	// }
+	MPI_Request new_request[numprocs];
+	MPI_Request new_send_requests[numprocs];
+
+	// SET ITERATION COUNT
+	int iterations = 400;
+
+	if (id == 0){
+		// VERIFY PARAMETERS CORRECTNESS
+		if ( ((dimention*dimention)/numprocs)%dimention != 0){
+			cout << "[ERROR] ((dimention*dimention)/numprocs)\% dimention be must equal to 0.";
+			cout << "\n\tFor example:\n\t\tdimention=8000\n\t\tnumprocs=4\n";
+		}
+	}
 
 	// ITERATE
 	while (iterations > 0){
 
 		// RECEIVERS RECEIVE
-		if (id == 1){
+		if (id != 0){
 			int ierr=MPI_Irecv(arr,full_dimention,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
 			ierr=MPI_Wait(&recv_request,&status);
 		}
 
 		// SENDER SENDS
 		if (id == 0){
-			int ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 1,array_broadcast,MPI_COMM_WORLD,&send_request);
-			ierr=MPI_Wait(&send_request,&status);
+			int ierr;
+			for (int i = 1; i < numprocs; i++){
+				ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, i,array_broadcast,MPI_COMM_WORLD,&new_send_requests[i]);
+			}
+			for (int i = 1; i < numprocs; i++){
+				ierr=MPI_Wait(&new_send_requests[i],&status);
+			}
 		}
 		
 		// RECEIVER ACTION
-		if (id == 1){
+		if (id != 0){
 
 			// LOCAL VARIABLES
 			int index = 0;
@@ -204,15 +236,13 @@ int main(int argc, char *argv[])
 			// CREATING LOCAL ARRAYS
 			char * local_arr = new char[division];
 
+
 			// RECEIVER PART OF JOB
 			for (int i = id * division; i < ((id + 1)*division); ++i){
 
 				// CHECKING NEIGHBOURS
 				int neighbours = check_neighbours(arr, dimention, i);
 
-				// FILLING ARRAY WITH 0
-				// TODO: NECCESSARY?
-				local_arr[index] = 0;
 				if (arr[i] == 0){
 					if (neighbours == 1 || neighbours == 2){
 						local_arr[index] = 1;
@@ -231,6 +261,7 @@ int main(int argc, char *argv[])
 					} 
 				}
 				++index;
+
 			}
 
 			// SENDING EXECUTED JOB
@@ -238,10 +269,11 @@ int main(int argc, char *argv[])
 			ierr=MPI_Wait(&send_request, &status);
 
 			free(local_arr);
-			//free(b_arr);
 
 			// END OF RECEIVER ACTION
 			--iterations;
+
+			
 		}
 
 		// SENDER ACTION
@@ -252,9 +284,14 @@ int main(int argc, char *argv[])
 			int division = full_dimention/numprocs;
 
 			// CREATING LOCAL ARRAYS
-			char * local_arr = new char[division];
 			char * next_arr = new char[full_dimention];
-			char * received_arr = new char[division];
+
+			char * r_arr[numprocs];
+			for (int i = 0; i < numprocs; ++i){
+				char * tarr = new char[division];
+				copy(arr, arr + (division), tarr);
+				r_arr[i] = tarr;
+			}
 
 			// SENDER PART OF JOB
 			for (int i = id * division; i < ((id + 1)*division); ++i){
@@ -262,70 +299,82 @@ int main(int argc, char *argv[])
 				// CHECKING NEIGHBOURS
 				int neighbours = check_neighbours(arr, dimention, i);
 
-				// FILLING ARRAY WITH 0
-				// TODO: NECCESSARY?
-				local_arr[index] = 0;
-
 				if ((int)arr[i] == 0){
 					if (neighbours == 1 || neighbours == 2){
-						local_arr[index] = 1;
+						r_arr[id][index] = 1;
 					}
 					else {
-						local_arr[index] = 0;
+						r_arr[id][index] = 0;
 					}
 				}
 				else {
 					if (neighbours > 2 || neighbours < 1){
-						local_arr[index] = 0;
+						r_arr[id][index] = 0;
 					}
 					else {
-						local_arr[index] = 1;
+						r_arr[id][index] = 1;
 					} 
 				}
 				++index;
 			}
 
+			
+
 			// MPI RECEIVING ACTION
-			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
-			int ierr=MPI_Irecv(received_arr,division,MPI_CHAR,1,calculation,MPI_COMM_WORLD,&recv_request);
-			ierr=MPI_Wait(&recv_request,&status);
+			int ierr;
+			for (int i = 1; i < numprocs; i++){
+				ierr=MPI_Irecv(r_arr[i],division,MPI_CHAR,i,calculation,MPI_COMM_WORLD,&new_request[i]);
+			}
+
+			for (int i = 1; i < numprocs; i++){
+				ierr=MPI_Wait(&new_request[i],&status);
+			}
+
+			
 
 			// FILLING NEW ARRAY WITH -1
 			// TODO: REMOVE AS REDUNDANT
-			for (int i = 0; i < full_dimention; ++i){
-				next_arr[i] = -1;
-			}
+			// for (int i = 0; i < full_dimention; ++i){
+			// 	next_arr[i] = -1;
+			// }
 
 			// FILLING NEW ARRAY
-			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
-			for (int i = 0; i < division; ++i){
-				next_arr[i] = local_arr[i];
+			index = 0;
+			for (int i = 0; i < numprocs; ++i){
+				int local_index = 0;
+				for (int j = i * division; j < (i+1)*division; ++j){
+					next_arr[index] = r_arr[i][local_index];
+					++index;
+					++local_index;
+				}
 			}
-			for (int i = 5000,j=0; i < division+5000; ++i,++j){
-				next_arr[i] = received_arr[j];
-			}
+
 
 			// OPTIONAL PRINTING
 			//print_array(next_arr, full_dimention);
 
 			// SETTING NEW ARRAY AS CURRENT ONE
-			//arr = array_copy(next_arr, full_dimention);
 			copy(next_arr, next_arr + (full_dimention), arr);
 
 			// CLEANUP
-			free(local_arr);
-			free(received_arr);
 			free(next_arr);
+			for (int i = 0; i < numprocs; ++i){
+				free(r_arr[i]);
+			}
 
 			// END OF SENDER ACTIONS
 			--iterations;
 
 			if (iterations < 2){
-				print_array(arr, full_dimention);
+				//print_array(arr, full_dimention);
 				int count = count_living(arr, dimention);
 				cout << "Living ones: " << count << endl;
 			}
 		}
+	}
+
+	if (id == 0){
+		cout << " Time spent:\t\t" << double(clock() - begin_pt) / CLOCKS_PER_SEC << endl;
 	}
 
 	MPI_Finalize();
