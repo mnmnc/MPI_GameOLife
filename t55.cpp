@@ -148,13 +148,7 @@ int main(int argc, char *argv[])
     MPI_Status status;
 	request = MPI_REQUEST_NULL;
 	MPI_Request	send_request;
-	MPI_Request	send_request2;
-	MPI_Request	send_request3;
 	MPI_Request recv_request;
-	MPI_Request recv_request2;
-	MPI_Request recv_request3;
-
-
 
 	// CREATING ENVIRONMENT
  	vector< vector<char>> env = create_environment(dimention);
@@ -165,8 +159,6 @@ int main(int argc, char *argv[])
 
 	// VECTOR TERMINATION
 	env.clear();
-
-	
 
 	// MPI INIT
 	MPI_Init(&argc,&argv);
@@ -211,16 +203,9 @@ int main(int argc, char *argv[])
 			for (int i = 1; i < numprocs; i++){
 				ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, i,array_broadcast,MPI_COMM_WORLD,&new_send_requests[i]);
 			}
-			// int ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 1,array_broadcast,MPI_COMM_WORLD,&send_request);
-			// ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 2,array_broadcast,MPI_COMM_WORLD,&send_request2);
-			// ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 3,array_broadcast,MPI_COMM_WORLD,&send_request3);
-
 			for (int i = 1; i < numprocs; i++){
 				ierr=MPI_Wait(&new_send_requests[i],&status);
 			}
-			
-			// ierr=MPI_Wait(&send_request2,&status);
-			// ierr=MPI_Wait(&send_request3,&status);
 		}
 		
 		// RECEIVER ACTION
@@ -281,9 +266,7 @@ int main(int argc, char *argv[])
 			int division = full_dimention/numprocs;
 
 			// CREATING LOCAL ARRAYS
-			char * local_arr = new char[division];
 			char * next_arr = new char[full_dimention];
-
 
 			char * r_arr[numprocs];
 			for (int i = 0; i < numprocs; ++i){
@@ -322,24 +305,14 @@ int main(int argc, char *argv[])
 			}
 
 			// MPI RECEIVING ACTION
-			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
-			int receiver_id1 = 1;
-			int receiver_id2 = 2;
-			int receiver_id3 = 3;
 			int ierr;
 			for (int i = 1; i < numprocs; i++){
 				ierr=MPI_Irecv(r_arr[i],division,MPI_CHAR,i,calculation,MPI_COMM_WORLD,&new_request[i]);
 			}
-			// ierr=MPI_Irecv(r_arr[receiver_id1],division,MPI_CHAR,receiver_id1,calculation,MPI_COMM_WORLD,&recv_request);
-			// ierr=MPI_Irecv(r_arr[receiver_id2],division,MPI_CHAR,receiver_id2,calculation,MPI_COMM_WORLD,&recv_request2);
-			// ierr=MPI_Irecv(r_arr[receiver_id3],division,MPI_CHAR,receiver_id3,calculation,MPI_COMM_WORLD,&recv_request3);
 
 			for (int i = 1; i < numprocs; i++){
 				ierr=MPI_Wait(&new_request[i],&status);
 			}
-			// ierr=MPI_Wait(&recv_request,&status);
-			// ierr=MPI_Wait(&recv_request2,&status);
-			// ierr=MPI_Wait(&recv_request3,&status);
 
 			// FILLING NEW ARRAY WITH -1
 			// TODO: REMOVE AS REDUNDANT
@@ -347,14 +320,7 @@ int main(int argc, char *argv[])
 				next_arr[i] = -1;
 			}
 
-
-			 // for (int i = 0; i < numprocs; ++i){
-			 // 	cout << "\nPart " << i << endl; 
-			 // 	print_division_array(r_arr[i], division, dimention);
-			 // }
-
 			// FILLING NEW ARRAY
-			// TODO: DYNAMIC BASED ON NUMBER OF PROCESSES
 			index = 0;
 			for (int i = 0; i < numprocs; ++i){
 				int local_index = 0;
@@ -367,16 +333,13 @@ int main(int argc, char *argv[])
 
 
 			// OPTIONAL PRINTING
-			print_array(next_arr, full_dimention);
+			//print_array(next_arr, full_dimention);
 
 			// SETTING NEW ARRAY AS CURRENT ONE
-			//arr = array_copy(next_arr, full_dimention);
 			copy(next_arr, next_arr + (full_dimention), arr);
 
 			// CLEANUP
-			free(local_arr);
 			free(next_arr);
-
 			for (int i = 0; i < numprocs; ++i){
 				free(r_arr[i]);
 			}
@@ -384,11 +347,11 @@ int main(int argc, char *argv[])
 			// END OF SENDER ACTIONS
 			--iterations;
 
-			// if (iterations < 2){
-			// 	print_array(arr, full_dimention);
-			// 	int count = count_living(arr, dimention);
-			// 	cout << "Living ones: " << count << endl;
-			// }
+			if (iterations < 2){
+				print_array(arr, full_dimention);
+				int count = count_living(arr, dimention);
+				cout << "Living ones: " << count << endl;
+			}
 		}
 	}
 
