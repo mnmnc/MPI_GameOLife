@@ -185,6 +185,7 @@ int main(int argc, char *argv[])
 	}
 
 	MPI_Request new_request[numprocs];
+	MPI_Request new_send_requests[numprocs];
 
 	// SET ITERATION COUNT
 	int iterations = 10;
@@ -206,13 +207,20 @@ int main(int argc, char *argv[])
 
 		// SENDER SENDS
 		if (id == 0){
-			int ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 1,array_broadcast,MPI_COMM_WORLD,&send_request);
-			ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 2,array_broadcast,MPI_COMM_WORLD,&send_request2);
-			ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 3,array_broadcast,MPI_COMM_WORLD,&send_request3);
+			int ierr;
+			for (int i = 1; i < numprocs; i++){
+				ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, i,array_broadcast,MPI_COMM_WORLD,&new_send_requests[i]);
+			}
+			// int ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 1,array_broadcast,MPI_COMM_WORLD,&send_request);
+			// ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 2,array_broadcast,MPI_COMM_WORLD,&send_request2);
+			// ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, 3,array_broadcast,MPI_COMM_WORLD,&send_request3);
 
-			ierr=MPI_Wait(&send_request,&status);
-			ierr=MPI_Wait(&send_request2,&status);
-			ierr=MPI_Wait(&send_request3,&status);
+			for (int i = 1; i < numprocs; i++){
+				ierr=MPI_Wait(&new_send_requests[i],&status);
+			}
+			
+			// ierr=MPI_Wait(&send_request2,&status);
+			// ierr=MPI_Wait(&send_request3,&status);
 		}
 		
 		// RECEIVER ACTION
