@@ -11,10 +11,10 @@
 
 using namespace std;
 
-vector <vector <char>> create_environment(int dimention){
-	vector <vector <char>> env;
+vector <vector <int>> create_environment(int dimention){
+	vector <vector <int>> env;
 	for (int i = 0; i < dimention; ++i){
-		vector <char> row;
+		vector <int> row;
 		for (int j = 0; j < dimention; ++j){
 			row.push_back(0);
 		}
@@ -24,7 +24,7 @@ vector <vector <char>> create_environment(int dimention){
 }
 
 
-vector <vector <char>> set_diagonal(vector <vector <char>> env){
+vector <vector <int>> set_diagonal(vector <vector <int>> env){
 	for (unsigned int i = 0; i < env.size(); ++i){
 		for (unsigned int j = 0; j < env.at(i).size(); ++j){
 			if (i == j){
@@ -43,8 +43,8 @@ vector <vector <char>> set_diagonal(vector <vector <char>> env){
 }
 
 
-char * vector_to_array(vector<vector<char>> env, int dimention){
-	char * arr = new char[dimention * dimention];
+int * vector_to_array(vector<vector<int>> env, int dimention){
+	int * arr = new int[dimention * dimention];
 	int index = 0;
 	for (unsigned int i = 0; i < env.size(); ++i){
 		for (unsigned int j = 0; j < env[0].size(); ++j){
@@ -57,7 +57,7 @@ char * vector_to_array(vector<vector<char>> env, int dimention){
 }
 
 
-void print_array(char arr[], int full_dimention){
+void print_array(int arr[], int full_dimention){
 	// PRINTING ARRAY
 	cout << endl;
 	for (int i = 0; i < full_dimention; ++i){
@@ -69,7 +69,7 @@ void print_array(char arr[], int full_dimention){
 }
 
 
-void print_division_array(char arr[], int full_size, int dimention){
+void print_division_array(int arr[], int full_size, int dimention){
 	// PRINTING ARRAY
 	cout << endl;
 	for (int i = 0; i < full_size; ++i){
@@ -81,50 +81,94 @@ void print_division_array(char arr[], int full_size, int dimention){
 }
 
 
-int check_neighbours(char arr[], int dimention, int x){
+int check_neighbours(int arr[], int dimention, int x){
 	int count = 0;
 
-	if ((x - dimention - 1) > -1 && ((int)((x - dimention - 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		count += arr[x - dimention - 1];
+	// a b c
+	// d x e
+	// f g h
+
+	// SECTION A
+	int a = x - dimention - 1;
+	int a_row = (int)(a / dimention);
+	int a_brow = (int)((a + 1) / dimention);
+
+	if ( a > -1 && a_row == a_brow ){
+		count += arr[a];
 	}
 
-	if (x - dimention > -1){
-		count += arr[x - dimention];
+	// SECTION B
+	int b = a + 1;
+
+	if (b > -1){
+		count += arr[b];
 	}
 
-	if ((x - dimention + 1 > 0) && ((int)((x - dimention + 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		count += arr[x - dimention + 1];
+	// SECTION C
+	int c = b + 1;
+	int c_row = (int)(c / dimention);
+	// a_brow reused
+
+	if (c > 0 && c_row == a_brow){
+		count += arr[c];
 	}
 	if (count > 2) return 8; // FAST EXIT
 
-	if (x - 1 > -1 && ((int)((x - 1) / dimention)) == ((int)(x / dimention))){
-		count += arr[x - 1];
+	// SECTION D
+	int d = x - 1;
+	int d_row = (int)(d / dimention);
+	int d_xrow = (int)(x / dimention);
+
+	if (d > -1 && d_row == d_xrow){
+		count += arr[d];
 	}
 	if (count > 2) return 8;
 
-	if (x + 1 < dimention*dimention && ((int)((x + 1) / dimention)) == ((int)(x / dimention))){
-		count += arr[x + 1];
+	// SECTION E
+	int e = x + 1;
+	int e_limit = dimention*dimention;
+	int e_row = (int)(e / dimention);
+	// d_xrow reused
+
+	if (e < e_limit && e_row == d_xrow){
+		count += arr[e];
 	}
 	if (count > 2) return 8;
 
-	if ((x + dimention - 1) < dimention*dimention && ((int)((x + dimention - 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		count += arr[x + dimention - 1];
+	// SECTION F
+	int f = x + dimention - 1;
+	// e_limit reused
+	int f_row = (int)(f / dimention);
+	int f_grow = (int)((x + dimention) / dimention);
+
+	if (f < e_limit && f_row == f_grow){
+		count += arr[f];
 	}
 	if (count > 2) return 8;
 
-	if ((x + dimention) < dimention*dimention ){
-		count += arr[x + dimention];
+	// SECTION G
+	int g = x + dimention;
+	// e_limit reused
+
+	if (g < e_limit ){
+		count += arr[g];
 	}
 	if (count > 2) return 8;
 
-	if ((x + dimention + 1) < dimention*dimention && ((int)((x + dimention + 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		count += arr[x + dimention + 1];
+	// SECTION H
+	int h = g + 1;
+	// e_limit reused
+	int h_row = (int)(h / dimention);
+	// f_grow reused
+
+	if (h < e_limit && h_row == f_grow){
+		count += arr[h];
 	}
 
 	return count;
 }
 
-int count_living(char arr[], int dimention){
+int count_living(int arr[], int dimention){
 	int counter = 0;
 	for (int i = 0; i < dimention * dimention; ++i){
 		counter += (int)arr[i];
@@ -153,11 +197,11 @@ int main(int argc, char *argv[])
 	MPI_Request recv_request;
 
 	// CREATING ENVIRONMENT
- 	vector< vector<char>> env = create_environment(dimention);
+ 	vector< vector<int>> env = create_environment(dimention);
 	env = set_diagonal(env);
 
 	// VECTOR TO PROPER ARRAY
-	char * arr = vector_to_array(env, dimention);
+	int * arr = vector_to_array(env, dimention);
 
 	// VECTOR TERMINATION
 	env.clear();
@@ -199,7 +243,7 @@ int main(int argc, char *argv[])
 
 		// RECEIVERS RECEIVE
 		if (id != 0){
-			int ierr=MPI_Irecv(arr,full_dimention,MPI_CHAR,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
+			int ierr=MPI_Irecv(arr,full_dimention,MPI_INT,0,array_broadcast,MPI_COMM_WORLD,&recv_request);
 			ierr=MPI_Wait(&recv_request,&status);
 		}
 
@@ -207,7 +251,7 @@ int main(int argc, char *argv[])
 		if (id == 0){
 			int ierr;
 			for (int i = 1; i < numprocs; i++){
-				ierr=MPI_Isend(arr,full_dimention,MPI_CHAR, i,array_broadcast,MPI_COMM_WORLD,&new_send_requests[i]);
+				ierr=MPI_Isend(arr,full_dimention,MPI_INT, i,array_broadcast,MPI_COMM_WORLD,&new_send_requests[i]);
 			}
 			for (int i = 1; i < numprocs; i++){
 				ierr=MPI_Wait(&new_send_requests[i],&status);
@@ -222,7 +266,7 @@ int main(int argc, char *argv[])
 			int division = full_dimention/numprocs;
 
 			// CREATING LOCAL ARRAYS
-			char * local_arr = new char[division];
+			int * local_arr = new int[division];
 
 
 			// RECEIVER PART OF JOB
@@ -253,7 +297,7 @@ int main(int argc, char *argv[])
 			}
 
 			// SENDING EXECUTED JOB
-			int ierr=MPI_Isend(local_arr, division, MPI_CHAR, 0, calculation, MPI_COMM_WORLD, &send_request);
+			int ierr=MPI_Isend(local_arr, division, MPI_INT, 0, calculation, MPI_COMM_WORLD, &send_request);
 			ierr=MPI_Wait(&send_request, &status);
 
 			// CLEANUP
@@ -271,11 +315,11 @@ int main(int argc, char *argv[])
 			int division = full_dimention/numprocs;
 
 			// CREATING LOCAL ARRAYS
-			char * next_arr = new char[full_dimention];
+			int * next_arr = new int[full_dimention];
 
-			char * r_arr[numprocs];
+			int * r_arr[numprocs];
 			for (int i = 0; i < numprocs; ++i){
-				char * tarr = new char[division];
+				int * tarr = new int[division];
 				copy(arr, arr + (division), tarr);
 				r_arr[i] = tarr;
 			}
@@ -310,7 +354,7 @@ int main(int argc, char *argv[])
 			// MPI RECEIVING ACTION
 			int ierr;
 			for (int i = 1; i < numprocs; i++){
-				ierr=MPI_Irecv(r_arr[i],division,MPI_CHAR,i,calculation,MPI_COMM_WORLD,&new_request[i]);
+				ierr=MPI_Irecv(r_arr[i],division,MPI_INT,i,calculation,MPI_COMM_WORLD,&new_request[i]);
 			}
 
 			for (int i = 1; i < numprocs; i++){
