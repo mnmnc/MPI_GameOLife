@@ -84,41 +84,85 @@ void print_division_array(char arr[], int full_size, int dimention){
 int check_neighbours(char arr[], int dimention, int x){
 	int count = 0;
 
-	if ((x - dimention - 1) > -1 && ((int)((x - dimention - 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		count += arr[x - dimention - 1];
+	// a b c
+	// d x e
+	// f g h
+
+	// SECTION A
+	int a = x - dimention - 1;
+	int a_row = (int)(a / dimention);
+	int a_brow = (int)((a + 1) / dimention);
+
+	if ( a > -1 && a_row == a_brow ){
+		count += arr[a];
 	}
 
-	if (x - dimention > -1){
-		count += arr[x - dimention];
+	// SECTION B
+	int b = a + 1;
+
+	if (b > -1){
+		count += arr[b];
 	}
 
-	if ((x - dimention + 1 > 0) && ((int)((x - dimention + 1) / dimention)) == ((int)((x - dimention) / dimention))){
-		count += arr[x - dimention + 1];
+	// SECTION C
+	int c = b + 1;
+	int c_row = (int)(c / dimention);
+	// a_brow reused
+
+	if (c > 0 && c_row == a_brow){
+		count += arr[c];
 	}
 	if (count > 2) return 8; // FAST EXIT
 
-	if (x - 1 > -1 && ((int)((x - 1) / dimention)) == ((int)(x / dimention))){
-		count += arr[x - 1];
+	// SECTION D
+	int d = x - 1;
+	int d_row = (int)(d / dimention);
+	int d_xrow = (int)(x / dimention);
+
+	if (d > -1 && d_row == d_xrow){
+		count += arr[d];
 	}
 	if (count > 2) return 8;
 
-	if (x + 1 < dimention*dimention && ((int)((x + 1) / dimention)) == ((int)(x / dimention))){
-		count += arr[x + 1];
+	// SECTION E
+	int e = x + 1;
+	int e_limit = dimention*dimention;
+	int e_row = (int)(e / dimention);
+	// d_xrow reused
+
+	if (e < e_limit && e_row == d_xrow){
+		count += arr[e];
 	}
 	if (count > 2) return 8;
 
-	if ((x + dimention - 1) < dimention*dimention && ((int)((x + dimention - 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		count += arr[x + dimention - 1];
+	// SECTION F
+	int f = x + dimention - 1;
+	// e_limit reused
+	int f_row = (int)(f / dimention);
+	int f_grow = (int)((x + dimention) / dimention);
+
+	if (f < e_limit && f_row == f_grow){
+		count += arr[f];
 	}
 	if (count > 2) return 8;
 
-	if ((x + dimention) < dimention*dimention ){
-		count += arr[x + dimention];
+	// SECTION G
+	int g = x + dimention;
+	// e_limit reused
+
+	if (g < e_limit ){
+		count += arr[g];
 	}
 	if (count > 2) return 8;
 
-	if ((x + dimention + 1) < dimention*dimention && ((int)((x + dimention + 1) / dimention)) == ((int)((x + dimention) / dimention))){
-		count += arr[x + dimention + 1];
+	// SECTION H
+	int h = g + 1;
+	// e_limit reused
+	int h_row = (int)(h / dimention);
+	// f_grow reused
+
+	if (h < e_limit && h_row == f_grow){
+		count += arr[h];
 	}
 
 	return count;
